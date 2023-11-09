@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/underwoo16/flapjacks/commands"
+	"github.com/underwoo16/git-stacks/commands"
 )
 
 func main() {

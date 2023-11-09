@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/underwoo16/flapjacks/utils"
+	"github.com/underwoo16/git-stacks/utils"
 )
 
 func Stack(args []string) {
