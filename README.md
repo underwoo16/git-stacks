@@ -1,19 +1,17 @@
 Functionality:
 
 "stack" command
-- [ ] start a new stacked workflow (ie git checkout -b <branch>-<stack>-1)
-- [ ] add a new layer to stack (ie git checkout -b <branch>-<stack>-<n+1>)
-- [ ] remove a layer from the stack (ie git branch -D <branch>-<stack>-<n>)
+- [ ] start a new stack (ie git checkout -b <branch>-<stack>-1)
+- [ ] add a new branch to stack (ie git checkout -b <branch>-<stack>-<n+1>)
+- [ ] remove a branch from stack (ie git branch -D <branch>-<stack>-<n>)
+- [ ] move to a given branch (ie git checkout <branch>-<stack>-<n>)
 
 "write" command
-- [ ] add current diff to the stack (ie git commit --amend)
-- [ ] add subset of current diff to the stack
+- [ ] commit to current branch (ie git commit [--amend])
+- [ ] commit subset of current diff to the branch
 
 "show" command
 - [ ] visualize the stack (???)
-
-"move" command
-- [ ] move to a different layer in the stack (ie git checkout <branch>-<stack>-<n>)
 
 "sync" command
 - [ ] sync the whole stack (ie git rebase --update-refs ???)
