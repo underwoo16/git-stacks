@@ -4,31 +4,33 @@ import (
 	"fmt"
 	"log"
 	"os/exec"
+	"strings"
 )
 
 func Stack(args []string) {
 	stackName := stackNameFromArgs(args)
 	fmt.Println("Creating stack", stackName, "...")
 
-	// ${parent branch name} - git symbolic-ref HEAD
-	parentBranchRef, err := exec.Command("git", "symbolic-ref", "HEAD").Output()
+	// ${parent branch ref} - git symbolic-ref HEAD
+	cmd := exec.Command("git", "symbolic-ref", "HEAD")
+	ref, symRefErr := cmd.Output()
 
-	if err != nil {
-		log.Fatal(err)
+	if symRefErr != nil {
+		log.Fatal(symRefErr)
 	}
-	fmt.Println("current ref:", string(parentBranchRef))
+	refName := string(ref)
+	fmt.Println("current ref:", refName)
 
-	// ${parent branch revision} - git rev-parse ref
-	// this isn't working?
-	cmd := exec.Command("git", "rev-parse", string(parentBranchRef))
-	fmt.Println(cmd.String())
-
+	// ${parent ref sha}
+	cmd = exec.Command("git", "rev-parse", strings.TrimSpace(refName))
 	sha, revParseErr := cmd.Output()
+
 	if revParseErr != nil {
 		log.Fatal(revParseErr)
 	}
+	refSha := string(sha)
 
-	fmt.Println("current ref sha:", string(sha))
+	fmt.Println("current ref sha:", refSha)
 }
 
 func stackNameFromArgs(args []string) string {

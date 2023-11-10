@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/underwoo16/git-stacks/commands"
-	"github.com/underwoo16/git-stacks/utils"
 )
 
 func main() {
@@ -21,7 +20,6 @@ func main() {
 	case "stack":
 		commands.Stack(commandArgs)
 	default:
-		result := utils.ParseStackFile()
-		fmt.Println(result)
+		fmt.Println("Unknown command")
 	}
 }

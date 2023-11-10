@@ -1,7 +1,9 @@
 package utils
 
 import (
+	"bufio"
 	"fmt"
+	"log"
 	"os"
 )
 
@@ -38,4 +40,23 @@ func WriteToFile(filePath string, content string) {
 		os.Exit(1)
 	}
 	fmt.Println("Wrote to file: ", filePath)
+}
+
+func ReadLine(filePath string) string {
+	file, err := os.Open(filePath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	var result string
+	scanner.Scan()
+	result = scanner.Text()
+
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return result
 }
