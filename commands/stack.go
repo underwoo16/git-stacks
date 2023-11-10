@@ -1,49 +1,40 @@
 package commands
 
 import (
-	"bufio"
 	"fmt"
-	"os"
-
-	"github.com/underwoo16/git-stacks/utils"
+	"log"
+	"os/exec"
 )
 
 func Stack(args []string) {
-	fmt.Println(args)
-	stackExists := utils.FileExists(".git/refs/stack")
+	stackName := stackNameFromArgs(args)
+	fmt.Println("Creating stack", stackName, "...")
 
-	if !stackExists {
-		utils.CreateFile(".git/refs/stack")
+	// ${parent branch name} - git symbolic-ref HEAD
+	parentBranchRef, err := exec.Command("git", "symbolic-ref", "HEAD").Output()
 
-		stackName := stackNameFromArgs(args)
-		fmt.Println("Creating new stack: ", stackName)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("current ref:", string(parentBranchRef))
 
-		utils.WriteToFile(".git/refs/stack", stackName)
+	// ${parent branch revision} - git rev-parse ref
+	// this isn't working?
+	cmd := exec.Command("git", "rev-parse", string(parentBranchRef))
+	fmt.Println(cmd.String())
+
+	sha, revParseErr := cmd.Output()
+	if revParseErr != nil {
+		log.Fatal(revParseErr)
 	}
 
-	// get existing stack name - first line in .git/refs/stack
-
-	// get existing branch name - line in .git/refs/stack with * prefix
-
-	// 3. Create new branch in stack - incrementing number
-
-	// 4. add reference to branch in stack file
-
-	// 5. checkout new branch
-
+	fmt.Println("current ref sha:", string(sha))
 }
 
 func stackNameFromArgs(args []string) string {
 	var nameArg string
 	if len(args) > 0 {
 		nameArg = args[0]
-		fmt.Println("Stack name arg: ", nameArg)
-	} else {
-		reader := bufio.NewReader(os.Stdin)
-		fmt.Print("Enter stack name: ")
-		input, _ := reader.ReadString('\n')
-		fmt.Println("You entered:", input)
-		nameArg = input
 	}
 
 	return nameArg
