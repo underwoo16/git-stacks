@@ -3,7 +3,6 @@ package utils
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"os"
 )
 
@@ -15,48 +14,39 @@ func FileExists(dirPath string) bool {
 	return !info.IsDir()
 }
 
-func CreateFile(dirPath string) {
-	_, err := os.Create(dirPath)
+func CreateFile(dirPath string) *os.File {
+	file, err := os.Create(dirPath)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 
-	fmt.Println("Created file: ", dirPath)
+	return file
 }
 
 func WriteToFile(filePath string, content string) {
 	file, err := os.OpenFile(filePath, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		file = CreateFile(filePath)
 	}
 
 	defer file.Close()
 
-	_, err = fmt.Fprintln(file, content)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	fmt.Println("Wrote to file: ", filePath)
+	_, err = fmt.Fprint(file, content)
+	CheckError(err)
 }
 
 func ReadLine(filePath string) string {
 	file, err := os.Open(filePath)
-	if err != nil {
-		log.Fatal(err)
-	}
+	CheckError(err)
+
 	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
-	var result string
 	scanner.Scan()
-	result = scanner.Text()
 
-	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
-	}
+	result := scanner.Text()
+	CheckError(scanner.Err())
 
 	return result
 }

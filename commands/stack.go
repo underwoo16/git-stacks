@@ -2,41 +2,51 @@ package commands
 
 import (
 	"fmt"
-	"log"
+	"os"
 	"os/exec"
+	"strings"
+
+	"github.com/underwoo16/git-stacks/utils"
 )
 
 func Stack(args []string) {
 	stackName := stackNameFromArgs(args)
-	fmt.Println("Creating stack", stackName, "...")
+	fmt.Printf("Creating stack %s...", stackName)
 
-	// ${parent branch ref} - git symbolic-ref HEAD
-	cmd := exec.Command("git", "symbolic-ref", "HEAD")
-	ref, symRefErr := cmd.Output()
-
-	if symRefErr != nil {
-		log.Fatal(symRefErr)
-	}
-	refName := string(ref)
-	fmt.Println("current ref:", refName)
+	// ${parent branch ref}
+	out, err := exec.Command("git", "symbolic-ref", "HEAD").Output()
+	utils.CheckError(err)
+	refName := string(out)
 
 	// ${parent ref sha}
-	cmd = exec.Command("git", "rev-parse", "HEAD")
-	sha, revParseErr := cmd.Output()
+	out, err = exec.Command("git", "rev-parse", "HEAD").Output()
+	utils.CheckError(err)
+	refSha := string(out)
 
-	if revParseErr != nil {
-		log.Fatal(revParseErr)
-	}
-	refSha := string(sha)
+	tempFilePath := fmt.Sprintf(".git/temp-%s", stackName)
+	hashObject := fmt.Sprintf("%s\n%s", strings.TrimSpace(refName), strings.TrimSpace(refSha))
+	utils.WriteToFile(tempFilePath, hashObject)
 
-	fmt.Println("current ref sha:", refSha)
+	out, err = exec.Command("git", "hash-object", "-w", tempFilePath).Output()
+	utils.CheckError(err)
+	objSha := strings.TrimSpace(string(out))
+
+	newRef := fmt.Sprintf("refs/stacks/%s", stackName)
+	_, err = exec.Command("git", "update-ref", newRef, objSha).Output()
+	utils.CheckError(err)
+
+	_, err = exec.Command("git", "checkout", "-b", stackName).Output()
+	utils.CheckError(err)
+
+	err = os.Remove(tempFilePath)
+	utils.CheckError(err)
 }
 
 func stackNameFromArgs(args []string) string {
-	var nameArg string
-	if len(args) > 0 {
-		nameArg = args[0]
+	if len(args) == 0 {
+		fmt.Println("No stack name provided")
+		os.Exit(1)
 	}
 
-	return nameArg
+	return args[0]
 }

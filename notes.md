@@ -9,3 +9,6 @@ update-ref refs/stacks/${stack_name} with resultant hash-object sha
 update-ref refs/heads/${stack_name} with parent branch revision
 
 checkout refs/heads/${stack_name}
+
+Find location of .git
+ - git rev-parse --show-toplevel
