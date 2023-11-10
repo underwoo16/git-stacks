@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os/exec"
-	"strings"
 )
 
 func Stack(args []string) {
@@ -22,7 +21,7 @@ func Stack(args []string) {
 	fmt.Println("current ref:", refName)
 
 	// ${parent ref sha}
-	cmd = exec.Command("git", "rev-parse", strings.TrimSpace(refName))
+	cmd = exec.Command("git", "rev-parse", "HEAD")
 	sha, revParseErr := cmd.Output()
 
 	if revParseErr != nil {
