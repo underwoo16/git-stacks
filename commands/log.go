@@ -2,45 +2,25 @@ package commands
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
 
 	"github.com/underwoo16/git-stacks/stacks"
-	"github.com/underwoo16/git-stacks/utils"
 )
 
 func Log() {
 	fmt.Println("Showing stack...")
 
-	// traverse refs/stacks
-	currentStacks := getStacks()
-	for _, stack := range currentStacks {
-		fmt.Println(stack.Name)
-	}
-
-	// build linked list
-
-	// mark current stack
-
 	// print out graph
-}
+	stackLinkedList := stacks.GetStackList()
+	current := &stackLinkedList
 
-func getStacks() []stacks.Stack {
-	var existingStacks []stacks.Stack
-	err := filepath.Walk(".git/refs/stacks", func(path string, info os.FileInfo, err error) error {
-		utils.CheckError(err)
+	for current != nil {
+		fmt.Printf("%s", current.Name)
 
-		if info.IsDir() {
-			return nil
+		if current.Parent != nil {
+			fmt.Printf(" <- ")
+		} else {
+			fmt.Printf("\n")
 		}
-
-		ref := path[5:]
-		stack := stacks.ReadStack(ref)
-		existingStacks = append(existingStacks, stack)
-
-		return nil
-	})
-	utils.CheckError(err)
-
-	return existingStacks
+		current = current.Parent
+	}
 }
