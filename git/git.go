@@ -41,3 +41,10 @@ func CreateAndCheckoutBranch(branch string) {
 	_, err := exec.Command("git", "checkout", "-b", branch).Output()
 	utils.CheckError(err)
 }
+
+func Show(thing string) string {
+	out, err := exec.Command("git", "show", thing).Output()
+	utils.CheckError(err)
+	result := strings.TrimSpace(string(out))
+	return result
+}

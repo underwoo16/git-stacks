@@ -19,6 +19,8 @@ func main() {
 	switch allArgs[0] {
 	case "stack":
 		commands.Stack(commandArgs)
+	case "log":
+		commands.Log()
 	default:
 		fmt.Println("Unknown command")
 	}
