@@ -42,6 +42,11 @@ func CreateAndCheckoutBranch(branch string) {
 	utils.CheckError(err)
 }
 
+func CheckoutBranch(branch string) {
+	_, err := exec.Command("git", "checkout", branch).Output()
+	utils.CheckError(err)
+}
+
 func Show(thing string) string {
 	out, err := exec.Command("git", "show", thing).Output()
 	utils.CheckError(err)

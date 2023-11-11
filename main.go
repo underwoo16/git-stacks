@@ -21,6 +21,8 @@ func main() {
 		commands.Stack(commandArgs)
 	case "log":
 		commands.Log()
+	case "down":
+		commands.Down()
 	default:
 		fmt.Println("Unknown command")
 	}
