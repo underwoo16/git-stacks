@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 
+	"github.com/underwoo16/git-stacks/colors"
 	"github.com/underwoo16/git-stacks/stacks"
 )
 
@@ -10,19 +11,19 @@ func Log() {
 	currentStack := stacks.GetCurrentStack()
 	currentStackName := stacks.GetNameFromRef(currentStack.Name)
 
-	// print out graph
 	stackLinkedList := stacks.GetStackList()
 	current := &stackLinkedList
 
 	for current != nil {
 		if current.Name == currentStackName {
-			fmt.Printf("* ")
+			fmt.Printf(colors.Blue("* "))
+			fmt.Printf(colors.Blue(current.Name))
+		} else {
+			fmt.Printf(colors.Yellow(current.Name))
 		}
 
-		fmt.Printf("%s", current.Name)
-
 		if current.Parent != nil {
-			fmt.Printf(" <- ")
+			fmt.Printf(colors.White(" <- "))
 		} else {
 			fmt.Printf("\n")
 		}
