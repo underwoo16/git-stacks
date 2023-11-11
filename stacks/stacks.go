@@ -2,6 +2,7 @@ package stacks
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -35,6 +36,23 @@ func GetCurrentStack() Stack {
 		}
 	}
 
+}
+
+func GetCurrentStackNode() StackNode {
+	currentStack := GetCurrentStack()
+	stackList := GetStackList()
+
+	current := &stackList
+	for current != nil {
+		if current.Name == GetNameFromRef(currentStack.Name) {
+			return *current
+		}
+
+		current = current.Parent
+	}
+
+	log.Fatal("Not currently on any known stack")
+	return stackList
 }
 
 func GetStackList() StackNode {
