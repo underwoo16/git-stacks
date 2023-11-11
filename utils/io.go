@@ -14,6 +14,11 @@ func FileExists(dirPath string) bool {
 	return !info.IsDir()
 }
 
+func RemoveFile(dirPath string) {
+	err := os.Remove(dirPath)
+	CheckError(err)
+}
+
 func CreateFile(dirPath string) *os.File {
 	file, err := os.Create(dirPath)
 	if err != nil {

@@ -3,9 +3,8 @@ package commands
 import (
 	"fmt"
 	"os"
-	"os/exec"
-	"strings"
 
+	"github.com/underwoo16/git-stacks/git"
 	"github.com/underwoo16/git-stacks/utils"
 )
 
@@ -13,33 +12,21 @@ func Stack(args []string) {
 	stackName := stackNameFromArgs(args)
 	fmt.Printf("Creating stack %s...", stackName)
 
-	// ${parent branch ref}
-	out, err := exec.Command("git", "symbolic-ref", "HEAD").Output()
-	utils.CheckError(err)
-	refName := string(out)
+	parentBranchRef := git.GetCurrentRef()
 
-	// ${parent ref sha}
-	out, err = exec.Command("git", "rev-parse", "HEAD").Output()
-	utils.CheckError(err)
-	refSha := string(out)
+	parentRefSha := git.GetCurrentSha()
 
 	tempFilePath := fmt.Sprintf(".git/temp-%s", stackName)
-	hashObject := fmt.Sprintf("%s\n%s", strings.TrimSpace(refName), strings.TrimSpace(refSha))
+	hashObject := fmt.Sprintf("%s\n%s", parentBranchRef, parentRefSha)
 	utils.WriteToFile(tempFilePath, hashObject)
 
-	out, err = exec.Command("git", "hash-object", "-w", tempFilePath).Output()
-	utils.CheckError(err)
-	objSha := strings.TrimSpace(string(out))
+	objectSha := git.CreateHashObject(tempFilePath)
+	utils.RemoveFile(tempFilePath)
 
 	newRef := fmt.Sprintf("refs/stacks/%s", stackName)
-	_, err = exec.Command("git", "update-ref", newRef, objSha).Output()
-	utils.CheckError(err)
+	git.UpdateRef(newRef, objectSha)
 
-	_, err = exec.Command("git", "checkout", "-b", stackName).Output()
-	utils.CheckError(err)
-
-	err = os.Remove(tempFilePath)
-	utils.CheckError(err)
+	git.CreateAndCheckoutBranch(stackName)
 }
 
 func stackNameFromArgs(args []string) string {
