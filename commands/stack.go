@@ -10,7 +10,8 @@ import (
 
 func Stack(args []string) {
 	stackName := stackNameFromArgs(args)
-	fmt.Printf("Creating stack %s...", stackName)
+	msg := fmt.Sprintf("Creating stack '%s'...", stackName)
+	fmt.Println(msg)
 
 	parentBranchRef := git.GetCurrentRef()
 
@@ -27,6 +28,9 @@ func Stack(args []string) {
 	git.UpdateRef(newRef, objectSha)
 
 	git.CreateAndCheckoutBranch(stackName)
+
+	msg = fmt.Sprintf("Done! Switched to new stack '%s'", stackName)
+	fmt.Println(msg)
 }
 
 func stackNameFromArgs(args []string) string {
