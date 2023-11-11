@@ -23,6 +23,20 @@ type StackNode struct {
 	Name   string
 }
 
+func GetCurrentStack() Stack {
+	currentRef := git.GetCurrentRef()
+
+	if refIsStack(currentRef) {
+		currentStackRef := convertHeadToStack(currentRef)
+		return readStack(currentStackRef)
+	} else {
+		return Stack{
+			Name: currentRef,
+		}
+	}
+
+}
+
 func GetStackList() StackNode {
 	currentStacks := getStacks()
 
@@ -30,7 +44,7 @@ func GetStackList() StackNode {
 	for _, stack := range currentStacks {
 		node := StackNode{
 			Value: stack,
-			Name:  getNameFromRef(stack.Name),
+			Name:  GetNameFromRef(stack.Name),
 		}
 		m[stack.Name] = node
 	}
@@ -39,16 +53,13 @@ func GetStackList() StackNode {
 	tipNode := m[tipStack.Name]
 
 	currentNode := &tipNode
-	// fmt.Printf("Tip node: %s\n", currentNode.Name)
-	// fmt.Printf("%s\n", currentNode.Value)
-
 	for currentNode != nil {
 		currentStack := currentNode.Value
 
 		parentStackNode, parentExists := m[convertHeadToStack(currentStack.ParentBranchRef)]
 		if !parentExists {
 			trunkNode := StackNode{
-				Name: getNameFromRef(currentStack.ParentBranchRef),
+				Name: GetNameFromRef(currentStack.ParentBranchRef),
 			}
 			parentStackNode = trunkNode
 		}
@@ -73,7 +84,7 @@ func readStack(ref string) Stack {
 	return Stack{Name: ref, ParentBranchRef: items[0], ParentRefSha: items[1]}
 }
 
-func getNameFromRef(ref string) string {
+func GetNameFromRef(ref string) string {
 	ref = strings.Replace(ref, "refs/heads/", "", -1)
 	return strings.Replace(ref, "refs/stacks/", "", -1)
 }
@@ -101,6 +112,11 @@ func getStacks() []Stack {
 	utils.CheckError(err)
 
 	return existingStacks
+}
+
+func refIsStack(ref string) bool {
+	index := strings.Index(ref, "refs/stacks/")
+	return index == 0
 }
 
 func FindTip(stacks []Stack) Stack {
