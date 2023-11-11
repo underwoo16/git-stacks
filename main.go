@@ -23,6 +23,8 @@ func main() {
 		commands.Log()
 	case "down":
 		commands.Down()
+	case "up":
+		commands.Up()
 	default:
 		fmt.Println("Unknown command")
 	}
