@@ -8,10 +8,10 @@ Functionality:
 - [ ] offer to commit working tree before stacking
 
 "up" command
-- [ ] move to child stack
+- [x] move to child stack
 
 "down" command
-- [ ] move to parent stack
+- [x] move to parent stack
 
 "write" command
 - [ ] commit to current branch (ie git commit [--amend])
