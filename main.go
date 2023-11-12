@@ -26,6 +26,6 @@ func main() {
 	case "up":
 		commands.Up()
 	default:
-		fmt.Println("Unknown command")
+		commands.PassThrough(allArgs)
 	}
 }
