@@ -1,9 +1,11 @@
 package git
 
 import (
+	"fmt"
 	"os/exec"
 	"strings"
 
+	"github.com/underwoo16/git-stacks/colors"
 	"github.com/underwoo16/git-stacks/utils"
 )
 
@@ -52,4 +54,19 @@ func Show(thing string) string {
 	utils.CheckError(err)
 	result := strings.TrimSpace(string(out))
 	return result
+}
+
+func PassThrough(args []string) {
+	fmt.Printf(colors.Gray("Running: \""))
+
+	cmdStr := fmt.Sprintf("git %s", strings.Join(args, " "))
+	fmt.Printf(colors.Yellow(cmdStr))
+
+	fmt.Printf(colors.Gray("\"\n"))
+
+	cmd := exec.Command("git", args...)
+	out, err := cmd.Output()
+	utils.CheckError(err)
+
+	fmt.Println(string(out))
 }
