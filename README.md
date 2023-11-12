@@ -30,4 +30,5 @@ Functionality:
 - [ ] pull trunk and restack everything
 
 Architectural:
+- [ ] Cache metadata locally (trunk, branches + children, parent branch + ref)
 - [ ] Allow for multiple children per stack
