@@ -62,7 +62,7 @@ func PassThrough(args []string) {
 	cmdStr := fmt.Sprintf("git %s", strings.Join(args, " "))
 	fmt.Printf(colors.Yellow(cmdStr))
 
-	fmt.Printf(colors.Gray("\"\n\n"))
+	fmt.Printf(colors.Gray("\"\n"))
 
 	cmd := exec.Command("git", args...)
 	out, err := cmd.Output()
