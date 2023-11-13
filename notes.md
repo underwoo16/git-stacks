@@ -23,3 +23,16 @@ plan to show stack
  - tip is node at other end
  - start at tip and print each node
  - mark current node when it is seen
+
+
+ ----------------------------------------------
+ plan to print graph
+
+printNode(node, column, depth)
+ - print name @ column
+ - depth++
+ - count children - 1 = x
+ - printNode(children[0], column[0], depth)
+ - printNode(children[1], column[1], depth)
+ ...
+ - printNode(children[x], column[x], depth)

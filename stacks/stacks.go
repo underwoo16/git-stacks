@@ -2,7 +2,6 @@ package stacks
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -18,88 +17,16 @@ type Stack struct {
 }
 
 type StackNode struct {
-	Value  Stack
-	Parent *StackNode
-	Child  *StackNode
-	Name   string
-}
-
-func GetCurrentStack() Stack {
-	currentRef := git.GetCurrentRef()
-
-	if refIsStack(currentRef) {
-		currentStackRef := convertHeadToStack(currentRef)
-		return readStack(currentStackRef)
-	} else {
-		return Stack{
-			Name: currentRef,
-		}
-	}
-
-}
-
-func GetCurrentStackNode() StackNode {
-	currentStack := GetCurrentStack()
-	stackList := GetStackList()
-
-	current := &stackList
-	for current != nil {
-		if current.Name == GetNameFromRef(currentStack.Name) {
-			return *current
-		}
-
-		current = current.Parent
-	}
-
-	log.Fatal("Not currently on any known stack")
-	return stackList
-}
-
-func GetStackList() StackNode {
-	currentStacks := getStacks()
-
-	m := make(map[string]StackNode)
-	for _, stack := range currentStacks {
-		node := StackNode{
-			Value: stack,
-			Name:  GetNameFromRef(stack.Name),
-		}
-		m[stack.Name] = node
-	}
-
-	tipStack := FindTip(currentStacks)
-	tipNode := m[tipStack.Name]
-
-	currentNode := &tipNode
-	for currentNode != nil {
-		currentStack := currentNode.Value
-
-		parentStackNode, parentExists := m[convertHeadToStack(currentStack.ParentBranchRef)]
-		if !parentExists {
-			trunkNode := StackNode{
-				Name: GetNameFromRef(currentStack.ParentBranchRef),
-			}
-			parentStackNode = trunkNode
-		}
-
-		parentStackNode.Child = currentNode
-
-		currentNode.Parent = &parentStackNode
-		if parentExists {
-			currentNode = &parentStackNode
-		} else {
-			currentNode = nil
-		}
-	}
-
-	return tipNode
+	Value    Stack
+	Parent   *StackNode
+	Children []*StackNode
+	Name     string
 }
 
 func readStack(ref string) Stack {
 	out := git.Show(ref)
 	items := strings.Fields(out)
-
-	return Stack{Name: ref, ParentBranchRef: items[0], ParentRefSha: items[1]}
+	return Stack{Name: GetNameFromRef(ref), ParentBranchRef: items[0], ParentRefSha: items[1]}
 }
 
 func GetNameFromRef(ref string) string {
@@ -121,6 +48,7 @@ func getStacks() []Stack {
 			return nil
 		}
 
+		// TODO: this seems brittle
 		ref := path[5:]
 		stack := readStack(ref)
 		existingStacks = append(existingStacks, stack)
@@ -132,32 +60,63 @@ func getStacks() []Stack {
 	return existingStacks
 }
 
-func refIsStack(ref string) bool {
-	index := strings.Index(ref, "refs/stacks/")
-	return index == 0
+func BuildStackGraphFromScratch() StackNode {
+	allStacks := getStacks()
+
+	config := GetConfig()
+	trunk := StackNode{
+		Name: config.Trunk,
+	}
+	BuildGraphRecursive(&trunk, allStacks)
+
+	return trunk
 }
 
-func FindTip(stacks []Stack) Stack {
-	if len(stacks) == 0 {
-		fmt.Println("No stacks initialized.")
-		os.Exit(1)
-	}
-
-	tip := stacks[0]
-	for _, stack := range stacks {
-		hasChild := false
-		for _, child := range stacks {
-			parentStackName := convertHeadToStack(child.ParentBranchRef)
-			if parentStackName == stack.Name {
-				hasChild = true
+func BuildGraphRecursive(trunk *StackNode, allStacks []Stack) {
+	for _, stack := range allStacks {
+		if stack.ParentBranchRef == trunk.Name {
+			childNode := StackNode{
+				Value:    stack,
+				Name:     stack.Name,
+				Parent:   trunk,
+				Children: []*StackNode{},
 			}
-		}
-
-		if !hasChild {
-			tip = stack
-			break
+			trunk.Children = append(trunk.Children, &childNode)
 		}
 	}
 
-	return tip
+	if len(trunk.Children) == 0 {
+		return
+	}
+
+	for _, child := range trunk.Children {
+		BuildGraphRecursive(child, allStacks)
+	}
+}
+
+func InsertStack(name string, parentBranchRef string, parentRefSha string) {
+	// perform git operations to create and switch to stack
+	tempFilePath := fmt.Sprintf(".git/temp-%s", name)
+
+	parentBranch := GetNameFromRef(parentBranchRef)
+	hashObject := fmt.Sprintf("%s\n%s", parentBranch, parentRefSha)
+	utils.WriteToFile(tempFilePath, hashObject)
+
+	objectSha := git.CreateHashObject(tempFilePath)
+	utils.RemoveFile(tempFilePath)
+	newRef := fmt.Sprintf("refs/stacks/%s", name)
+	git.UpdateRef(newRef, objectSha)
+
+	git.CreateAndCheckoutBranch(name)
+
+	// Update stack graph
+	stackToInsert := Stack{
+		Name:            name,
+		ParentBranchRef: parentBranchRef,
+		ParentRefSha:    parentRefSha,
+	}
+	fmt.Println(stackToInsert)
+
+	// Update stack graph
+	// Update cache from stack graph
 }
