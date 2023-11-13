@@ -73,7 +73,6 @@ func BuildStackGraphFromScratch() *StackNode {
 		Children: []*StackNode{},
 	}
 
-	fmt.Printf("Building graph from trunk: %s\n", trunk.Name)
 	BuildGraphRecursive(&trunk, allStacks)
 
 	return &trunk
