@@ -10,23 +10,26 @@ import (
 	"github.com/underwoo16/git-stacks/utils"
 )
 
-type Stack struct {
-	Name            string
-	ParentBranchRef string
-	ParentRefSha    string
-}
-
 type StackNode struct {
-	Value    Stack
-	Parent   *StackNode
-	Children []*StackNode
-	Name     string
+	Name         string
+	Parent       *StackNode
+	Children     []*StackNode
+	RefSha       string
+	ParentBranch string
+	ParentRefSha string
 }
 
-func readStack(ref string) Stack {
+func readStack(ref string) *StackNode {
 	out := git.Show(ref)
 	items := strings.Fields(out)
-	return Stack{Name: GetNameFromRef(ref), ParentBranchRef: items[0], ParentRefSha: items[1]}
+	name := GetNameFromRef(ref)
+	return &StackNode{
+		Name:         name,
+		RefSha:       git.RevParse(name),
+		ParentBranch: GetNameFromRef(items[0]),
+		ParentRefSha: items[1],
+		Children:     []*StackNode{},
+	}
 }
 
 func GetNameFromRef(ref string) string {
@@ -38,8 +41,8 @@ func convertHeadToStack(ref string) string {
 	return strings.Replace(ref, "refs/heads", "refs/stacks", -1)
 }
 
-func getStacks() []Stack {
-	var existingStacks []Stack
+func getStacks() []*StackNode {
+	var existingStacks []*StackNode
 	// TODO: get .git directory dynamically to avoid hardcoding
 	err := filepath.Walk(".git/refs/stacks", func(path string, info os.FileInfo, err error) error {
 		utils.CheckError(err)
@@ -60,28 +63,27 @@ func getStacks() []Stack {
 	return existingStacks
 }
 
-func BuildStackGraphFromScratch() StackNode {
+func BuildStackGraphFromScratch() *StackNode {
 	allStacks := getStacks()
 
 	config := GetConfig()
 	trunk := StackNode{
-		Name: config.Trunk,
+		Name:     config.Trunk,
+		RefSha:   git.RevParse(config.Trunk),
+		Children: []*StackNode{},
 	}
+
+	fmt.Printf("Building graph from trunk: %s\n", trunk.Name)
 	BuildGraphRecursive(&trunk, allStacks)
 
-	return trunk
+	return &trunk
 }
 
-func BuildGraphRecursive(trunk *StackNode, allStacks []Stack) {
+func BuildGraphRecursive(trunk *StackNode, allStacks []*StackNode) {
 	for _, stack := range allStacks {
-		if stack.ParentBranchRef == trunk.Name {
-			childNode := StackNode{
-				Value:    stack,
-				Name:     stack.Name,
-				Parent:   trunk,
-				Children: []*StackNode{},
-			}
-			trunk.Children = append(trunk.Children, &childNode)
+		if stack.ParentBranch == trunk.Name {
+			stack.Parent = trunk
+			trunk.Children = append(trunk.Children, stack)
 		}
 	}
 
@@ -110,12 +112,6 @@ func InsertStack(name string, parentBranchRef string, parentRefSha string) {
 	git.CreateAndCheckoutBranch(name)
 
 	// Update stack graph
-	stackToInsert := Stack{
-		Name:            name,
-		ParentBranchRef: parentBranchRef,
-		ParentRefSha:    parentRefSha,
-	}
-	fmt.Println(stackToInsert)
 
 	// Update stack graph
 	// Update cache from stack graph
