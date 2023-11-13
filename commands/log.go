@@ -20,7 +20,6 @@ func Log() {
 	}
 }
 
-// TODO: store columns in a map
 func bfs(node *stacks.StackNode, col int, arr []*stacks.StackNode, m map[string]int) ([]*stacks.StackNode, map[string]int) {
 	arr = append(arr, node)
 	m[node.Name] = col
@@ -33,18 +32,3 @@ func bfs(node *stacks.StackNode, col int, arr []*stacks.StackNode, m map[string]
 
 	return arr, m
 }
-
-// func dfs(node stacks.StackNode) {
-// 	queue := []stacks.StackNode{node}
-
-// 	for len(queue) > 0 {
-// 		current := queue[0]
-// 		queue = queue[1:]
-
-// 		fmt.Printf("Visiting: %s\n", current.Name)
-
-// 		for _, child := range current.Children {
-// 			queue = append(queue, child)
-// 		}
-// 	}
-// }
