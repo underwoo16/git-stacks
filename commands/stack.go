@@ -9,19 +9,18 @@ import (
 )
 
 func Stack(args []string) {
-	parentBranchRef := git.GetCurrentRef()
+	parentBranch := git.GetCurrentBranch()
 	parentRefSha := git.GetCurrentSha()
 
 	if !stacks.ConfigExists() {
 		fmt.Println("No stacks config found. Creating...")
-		parentBranch := stacks.GetNameFromRef(parentBranchRef)
 		stacks.UpdateConfig(stacks.Config{Trunk: parentBranch})
 	}
 
 	stackName := stackNameFromArgs(args)
 	fmt.Printf("Creating stack '%s'...\n", stackName)
 
-	stacks.InsertStack(stackName, parentBranchRef, parentRefSha)
+	stacks.InsertStack(stackName, parentBranch, parentRefSha)
 
 	fmt.Printf("Done! Switched to new stack '%s'\n", stackName)
 }

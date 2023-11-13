@@ -9,6 +9,13 @@ import (
 	"github.com/underwoo16/git-stacks/utils"
 )
 
+func GetCurrentBranch() string {
+	out, err := exec.Command("git", "rev-parse", "--abbrev-ref", "HEAD").Output()
+	utils.CheckError(err)
+	branchName := strings.TrimSpace(string(out))
+	return branchName
+}
+
 func GetCurrentRef() string {
 	out, err := exec.Command("git", "symbolic-ref", "HEAD").Output()
 	utils.CheckError(err)

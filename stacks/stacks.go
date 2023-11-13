@@ -148,11 +148,10 @@ func bfs(node *StackNode, arr []Branch) []Branch {
 	return arr
 }
 
-func InsertStack(name string, parentBranchRef string, parentRefSha string) {
+func InsertStack(name string, parentBranch string, parentRefSha string) {
 	// perform git operations to create and switch to stack
 	tempFilePath := fmt.Sprintf(".git/temp-%s", name)
 
-	parentBranch := GetNameFromRef(parentBranchRef)
 	hashObject := fmt.Sprintf("%s\n%s", parentBranch, parentRefSha)
 	utils.WriteToFile(tempFilePath, hashObject)
 
@@ -163,8 +162,23 @@ func InsertStack(name string, parentBranchRef string, parentRefSha string) {
 
 	git.CreateAndCheckoutBranch(name)
 
-	// Update stack graph
-
+	// TODO:
 	// Update stack graph
 	// Update cache from stack graph
+}
+
+func StackExists(ref string) bool {
+	name := GetNameFromRef(ref)
+	// TODO: get .git directory dynamically to avoid hardcoding
+	return utils.FileExists(fmt.Sprintf(".git/refs/stacks/%s", name))
+}
+
+func GetCurrentStackNode() *StackNode {
+	currentBranch := git.GetCurrentRef()
+	if !StackExists(currentBranch) {
+		return nil
+	}
+
+	currentStack := convertHeadToStack(currentBranch)
+	return readStack(currentStack)
 }
