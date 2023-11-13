@@ -7,18 +7,13 @@ import (
 )
 
 func Log() {
-	trunk := stacks.BuildStackGraphFromScratch()
+	trunk := stacks.GetGraphFromCache()
 	fmt.Printf("%v\n", trunk)
-	arr := bfs(trunk, 0, []*stacks.StackNode{})
-	for depth := len(arr) - 1; depth >= 0; depth-- {
-		fmt.Printf("%s\n", arr[depth].Name)
-	}
 }
 
 // TODO: store columns in a map
 func bfs(node *stacks.StackNode, col int, arr []*stacks.StackNode) []*stacks.StackNode {
 	arr = append(arr, node)
-	fmt.Printf("%s col %d depth %d\n", node.Name, col, len(arr))
 
 	childCount := len(node.Children)
 	for i := childCount - 1; i >= 0; i-- {

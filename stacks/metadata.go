@@ -19,7 +19,7 @@ type Branch struct {
 	BranchRevision       string
 	ParentBranchName     string
 	ParentBranchRevision string
-	Children             []Branch
+	Children             []string
 }
 
 func ConfigExists() bool {

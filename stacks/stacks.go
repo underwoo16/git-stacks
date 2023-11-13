@@ -96,6 +96,58 @@ func BuildGraphRecursive(trunk *StackNode, allStacks []*StackNode) {
 	}
 }
 
+func CacheGraphToDisk(trunk *StackNode) {
+	branches := bfs(trunk, []Branch{})
+	UpdateCache(Cache{Branches: branches})
+
+}
+
+func GetGraphFromCache() *StackNode {
+	branches := GetCache().Branches
+	stackMap := make(map[string]*StackNode)
+
+	for _, branch := range branches {
+		node := StackNode{
+			Name:         branch.Name,
+			RefSha:       branch.BranchRevision,
+			ParentBranch: branch.ParentBranchName,
+			ParentRefSha: branch.ParentBranchRevision,
+			Children:     []*StackNode{},
+		}
+		stackMap[branch.Name] = &node
+	}
+
+	for _, branch := range branches {
+		node := stackMap[branch.Name]
+		for _, child := range branch.Children {
+			node.Children = append(node.Children, stackMap[child])
+		}
+	}
+
+	trunkName := GetConfig().Trunk
+	trunk := stackMap[trunkName]
+
+	return trunk
+}
+
+func bfs(node *StackNode, arr []Branch) []Branch {
+	branch := Branch{
+		Name:                 node.Name,
+		BranchRevision:       node.RefSha,
+		ParentBranchName:     node.ParentBranch,
+		ParentBranchRevision: node.ParentRefSha,
+		Children:             []string{},
+	}
+	for i := 0; i < len(node.Children); i++ {
+		child := node.Children[i]
+		branch.Children = append(branch.Children, child.Name)
+		arr = bfs(child, arr)
+	}
+
+	arr = append(arr, branch)
+	return arr
+}
+
 func InsertStack(name string, parentBranchRef string, parentRefSha string) {
 	// perform git operations to create and switch to stack
 	tempFilePath := fmt.Sprintf(".git/temp-%s", name)
