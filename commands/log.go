@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/underwoo16/git-stacks/colors"
 	"github.com/underwoo16/git-stacks/git"
@@ -25,63 +26,79 @@ func Log() {
 	currentBranch := git.GetCurrentBranch()
 	trunk := stacks.BuildStackGraphFromScratch()
 
-	// TODO: move this logic to stacks package
+	// TODO: move this logic to stacks package?
 	depthStack, colMap := bfs(trunk, 0, []*stacks.StackNode{}, map[string]int{})
 
-	// TODO: clean all of this up - its a messy
+	sb := strings.Builder{}
 	for depth := len(depthStack) - 1; depth >= 0; depth-- {
 		node := depthStack[depth]
 		col := colMap[node.Name]
-		if col > 0 {
-			fmt.Printf("%s", vertical)
-			for i := 0; i < col; i++ {
-				if i > 0 {
-					fmt.Printf("%s", vertical)
-				}
-				fmt.Printf("%s", spacer)
-			}
-		}
 
-		nodePrefix := circle
-		nodeSuffix := ""
-		if node.Name == currentBranch {
-			nodePrefix = colors.CurrentStack(dot)
-			nodeSuffix = "*"
-		}
-
-		stackLabel := fmt.Sprintf("%s %s\n", node.Name, nodeSuffix)
-		if node.Name == currentBranch {
-			stackLabel = colors.CurrentStack(stackLabel)
-		} else {
-			stackLabel = colors.OtherStack(stackLabel)
-		}
-
-		fmt.Printf("%s ", nodePrefix)
-		fmt.Printf(stackLabel)
+		writeRow(&sb, col)
+		writeStackLabel(&sb, node, currentBranch)
 
 		if depth > 0 {
-			for i := 0; i < 3; i++ {
-				fmt.Printf("%s", vertical)
-				for i := 0; i < col; i++ {
-					fmt.Printf("%s", spacer)
-					fmt.Printf("%s", vertical)
-				}
-				fmt.Printf("\n")
-			}
+			writeColumns(&sb, col)
 
-			// "├ ─ ─ ┴ ─ ─ ┘"
 			if col > 0 && isLowestChild(node, depth, depthStack) {
-				fmt.Printf("%s", horizBranch)
-				for i := 0; i < col; i++ {
-					fmt.Printf("%s%s", horizontal, horizontal)
-					if i < col-1 {
-						fmt.Printf("%s", vertBranch)
-					} else {
-						fmt.Printf("%s\n", endBranch)
-					}
-
-				}
+				writeConnectingBranches(&sb, col)
 			}
+		}
+	}
+
+	fmt.Print(sb.String())
+}
+
+func writeRow(sb *strings.Builder, col int) {
+	if col > 0 {
+		sb.WriteString(vertical)
+		for i := 0; i < col; i++ {
+			if i > 0 {
+				sb.WriteString(vertical)
+			}
+			sb.WriteString(spacer)
+		}
+	}
+}
+
+func writeStackLabel(sb *strings.Builder, node *stacks.StackNode, currentBranch string) {
+	nodePrefix := circle
+	nodeSuffix := ""
+	if node.Name == currentBranch {
+		nodePrefix = colors.CurrentStack(dot)
+		nodeSuffix = "*"
+	}
+
+	stackLabel := fmt.Sprintf("%s %s\n", node.Name, nodeSuffix)
+	if node.Name == currentBranch {
+		stackLabel = colors.CurrentStack(stackLabel)
+	} else {
+		stackLabel = colors.OtherStack(stackLabel)
+	}
+
+	sb.WriteString(nodePrefix + " " + stackLabel)
+}
+
+func writeColumns(sb *strings.Builder, col int) {
+	for i := 0; i < 3; i++ {
+		sb.WriteString(vertical)
+		for i := 0; i < col; i++ {
+			sb.WriteString(spacer)
+			sb.WriteString(vertical)
+		}
+		sb.WriteString("\n")
+	}
+}
+
+// "├ ─ ─ ┴ ─ ─ ┘"
+func writeConnectingBranches(sb *strings.Builder, col int) {
+	sb.WriteString(horizBranch)
+	for i := 0; i < col; i++ {
+		sb.WriteString(horizontal + horizontal)
+		if i < col-1 {
+			sb.WriteString(vertBranch)
+		} else {
+			sb.WriteString(endBranch + "\n")
 		}
 	}
 }
@@ -112,7 +129,6 @@ func isLowestChild(child *stacks.StackNode, depth int, arr []*stacks.StackNode) 
 	}
 
 	return true
-
 }
 
 func bfs(node *stacks.StackNode, col int, depthStack []*stacks.StackNode, colMap map[string]int) ([]*stacks.StackNode, map[string]int) {
