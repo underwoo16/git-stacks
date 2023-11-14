@@ -3,46 +3,79 @@ package commands
 import (
 	"fmt"
 
+	"github.com/underwoo16/git-stacks/colors"
+	"github.com/underwoo16/git-stacks/git"
 	"github.com/underwoo16/git-stacks/stacks"
 )
 
 var vertical = "│"
-var bend = "┘"
 var horizontal = "─"
 var spacer = "  "
 var circle = "◯"
-var branch = "├"
+var dot = "◉"
+var bend = "┘"
+var horizBranch = "├"
+var vertBranch = "┴"
 
 func Log() {
 	// TODO: use cache if exists
+	currentBranch := git.GetCurrentBranch()
 	trunk := stacks.BuildStackGraphFromScratch()
 
-	arr, m := bfs(trunk, 0, []*stacks.StackNode{}, map[string]int{})
+	depthStack, colMap := bfs(trunk, 0, []*stacks.StackNode{}, map[string]int{})
 
-	for depth := len(arr) - 1; depth >= 0; depth-- {
-		node := arr[depth]
-		col := m[node.Name]
+	for depth := len(depthStack) - 1; depth >= 0; depth-- {
+		node := depthStack[depth]
+		col := colMap[node.Name]
 		if col > 0 {
 			fmt.Printf("%s", vertical)
 			for i := 0; i < col; i++ {
+				if i > 0 {
+					fmt.Printf("%s", vertical)
+				}
 				fmt.Printf("%s", spacer)
 			}
 		}
-		fmt.Printf("%s %s\n", circle, node.Name)
-		if depth > 0 {
-			fmt.Printf("%s", vertical)
-			for i := 0; i < col; i++ {
-				fmt.Printf("%s", spacer)
-				fmt.Printf("%s", vertical)
-			}
-			fmt.Printf("\n")
 
-			if col > 0 && isLowestChild(node, depth, arr) {
-				fmt.Printf("%s", branch)
+		nodePrefix := circle
+		nodeSuffix := ""
+		if node.Name == currentBranch {
+			nodePrefix = colors.CurrentStack(dot)
+			nodeSuffix = "*"
+		}
+
+		stackLabel := fmt.Sprintf("%s %s\n", node.Name, nodeSuffix)
+		if node.Name == currentBranch {
+			stackLabel = colors.CurrentStack(stackLabel)
+		} else {
+			stackLabel = colors.OtherStack(stackLabel)
+		}
+
+		fmt.Printf("%s ", nodePrefix)
+		fmt.Printf(stackLabel)
+
+		if depth > 0 {
+			for i := 0; i < 3; i++ {
+				fmt.Printf("%s", vertical)
+				for i := 0; i < col; i++ {
+					fmt.Printf("%s", spacer)
+					fmt.Printf("%s", vertical)
+				}
+				fmt.Printf("\n")
+			}
+
+			// "├ ─ ─ ┴ ─ ─ ┘"
+			if col > 0 && isLowestChild(node, depth, depthStack) {
+				fmt.Printf("%s", horizBranch)
 				for i := 0; i < col; i++ {
 					fmt.Printf("%s%s", horizontal, horizontal)
+					if i < col-1 {
+						fmt.Printf("%s", vertBranch)
+					} else {
+						fmt.Printf("%s\n", bend)
+					}
+
 				}
-				fmt.Printf("%s\n", bend)
 			}
 		}
 	}
@@ -77,15 +110,15 @@ func isLowestChild(child *stacks.StackNode, depth int, arr []*stacks.StackNode) 
 
 }
 
-func bfs(node *stacks.StackNode, col int, arr []*stacks.StackNode, m map[string]int) ([]*stacks.StackNode, map[string]int) {
-	arr = append(arr, node)
-	m[node.Name] = col
+func bfs(node *stacks.StackNode, col int, depthStack []*stacks.StackNode, colMap map[string]int) ([]*stacks.StackNode, map[string]int) {
+	depthStack = append(depthStack, node)
+	colMap[node.Name] = col
 
 	childCount := len(node.Children)
 	for i := childCount - 1; i >= 0; i-- {
 		child := node.Children[i]
-		arr, m = bfs(child, col+i, arr, m)
+		depthStack, colMap = bfs(child, col+i, depthStack, colMap)
 	}
 
-	return arr, m
+	return depthStack, colMap
 }
