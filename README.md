@@ -5,7 +5,6 @@ Functionality:
 - [x] add a new branch to stack (ie git checkout -b <branch>-<stack>-<n+1>)
 - [ ] remove a branch from stack (and retarget children)
 - [ ] move directly to a given stack
-- [ ] offer to commit working tree before stacking
 
 "up" command
 - [x] move to child stack
@@ -24,11 +23,11 @@ Functionality:
 - [ ] add sync info
 
 "restack" command
-- [ ] rebase everything in current stack
+- [x] rebase everything in current stack
 
 "sync" command
 - [ ] pull trunk and restack everything
 
 Architectural:
-- [ ] Cache metadata locally (trunk, branches + children, parent branch + ref)
-- [ ] Allow for multiple children per stack
+- [x] Cache metadata locally (trunk, branches + children, parent branch + ref)
+- [x] Allow for multiple children per stack

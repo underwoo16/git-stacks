@@ -11,9 +11,12 @@ import (
 var vertical = "│"
 var horizontal = "─"
 var spacer = "  "
+
+// TODO: use different symbols for current stack and other stacks
 var circle = "◯"
 var dot = "◉"
-var bend = "┘"
+
+var endBranch = "┘"
 var horizBranch = "├"
 var vertBranch = "┴"
 
@@ -22,8 +25,10 @@ func Log() {
 	currentBranch := git.GetCurrentBranch()
 	trunk := stacks.BuildStackGraphFromScratch()
 
+	// TODO: move this logic to stacks package
 	depthStack, colMap := bfs(trunk, 0, []*stacks.StackNode{}, map[string]int{})
 
+	// TODO: clean all of this up - its a messy
 	for depth := len(depthStack) - 1; depth >= 0; depth-- {
 		node := depthStack[depth]
 		col := colMap[node.Name]
@@ -72,7 +77,7 @@ func Log() {
 					if i < col-1 {
 						fmt.Printf("%s", vertBranch)
 					} else {
-						fmt.Printf("%s\n", bend)
+						fmt.Printf("%s\n", endBranch)
 					}
 
 				}

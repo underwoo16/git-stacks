@@ -9,6 +9,8 @@ import (
 )
 
 func Restack() {
+	// TODO: move this logic to stacks package
+	// TODO: Handle merge failure (e.g. conflicts) and continue
 	// TODO: use cache if exists
 	// TODO: get subtree starting from current branch
 	trunk := stacks.BuildStackGraphFromScratch()
