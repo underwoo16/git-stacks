@@ -24,7 +24,8 @@ var vertBranch = "┴"
 func Log() {
 	// TODO: use cache if exists
 	currentBranch := git.GetCurrentBranch()
-	trunk := stacks.BuildStackGraphFromScratch()
+	// trunk := stacks.BuildStackGraphFromScratch()
+	trunk := stacks.TestGetGraph()
 
 	// TODO: move this logic to stacks package?
 	depthStack, colMap := bfs(trunk, 0, []*stacks.StackNode{}, map[string]int{})

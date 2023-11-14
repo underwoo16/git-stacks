@@ -17,6 +17,41 @@ func BuildStackGraphFromScratch() *StackNode {
 	return &trunk
 }
 
+// TODO: Benchmark this vs. recursive version ^^^
+func TestGetGraph() *StackNode {
+	config := GetConfig()
+	trunk := StackNode{
+		Name:     config.Trunk,
+		RefSha:   git.RevParse(config.Trunk),
+		Children: []*StackNode{},
+	}
+
+	allStacks := getStacks()
+	allStacks = append(allStacks, &trunk)
+	return BuildGraphIterative(allStacks)
+}
+
+func BuildGraphIterative(allStacks []*StackNode) *StackNode {
+	// put each node in map by name
+	stackMap := make(map[string]*StackNode)
+	for _, stack := range allStacks {
+		stackMap[stack.Name] = stack
+	}
+
+	// iterate through all stacks and add children to parent
+	for _, stack := range allStacks {
+		parent := stackMap[stack.ParentBranch]
+		if parent != nil {
+			stack.Parent = parent
+			parent.Children = append(parent.Children, stack)
+		}
+	}
+
+	trunk := stackMap[GetConfig().Trunk]
+	return trunk
+
+}
+
 func BuildGraphRecursive(trunk *StackNode, allStacks []*StackNode) {
 	for _, stack := range allStacks {
 		if stack.ParentBranch == trunk.Name {
