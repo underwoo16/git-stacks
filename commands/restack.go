@@ -32,6 +32,8 @@ func restackChildren(children []*stacks.StackNode, parentSha string) {
 			git.Rebase(child.ParentBranch, child.Name)
 			newSha := git.RevParse(child.Name)
 			child.RefSha = newSha
+			child.ParentRefSha = parentSha
+			stacks.UpdateStack(child)
 		} else {
 			fmt.Printf("%s up to date with %s\n", childName, parentName)
 		}

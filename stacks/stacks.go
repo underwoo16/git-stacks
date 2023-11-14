@@ -147,6 +147,19 @@ func bfs(node *StackNode, arr []Branch) []Branch {
 	return arr
 }
 
+func UpdateStack(stack *StackNode) {
+
+	tempFilePath := fmt.Sprintf(".git/temp-%s", stack.Name)
+
+	hashObject := fmt.Sprintf("%s\n%s", stack.ParentBranch, stack.ParentRefSha)
+	utils.WriteToFile(tempFilePath, hashObject)
+
+	objectSha := git.CreateHashObject(tempFilePath)
+	utils.RemoveFile(tempFilePath)
+	newRef := fmt.Sprintf("refs/stacks/%s", stack.Name)
+	git.UpdateRef(newRef, objectSha)
+}
+
 func InsertStack(name string, parentBranch string, parentRefSha string) {
 	// perform git operations to create and switch to stack
 	tempFilePath := fmt.Sprintf(".git/temp-%s", name)
