@@ -33,6 +33,8 @@ func restackChildren(children []*stacks.StackNode, parentSha string) {
 			newSha := git.RevParse(child.Name)
 			child.RefSha = newSha
 			child.ParentRefSha = parentSha
+
+			// TODO: is it better to update the cache here or at the end using full graph?
 			stacks.UpdateStack(child)
 		} else {
 			fmt.Printf("%s up to date with %s\n", childName, parentName)
