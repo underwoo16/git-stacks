@@ -28,9 +28,10 @@ func restackChildren(children []*stacks.StackNode, parentSha string) {
 		childName := colors.CurrentStack(child.Name)
 		parentName := colors.OtherStack(child.Parent.Name)
 		if child.ParentRefSha != parentSha {
-			// TODO: update child.refSha if rebased
 			fmt.Printf("%s restacking onto %s\n", childName, parentName)
 			git.Rebase(child.ParentBranch, child.Name)
+			newSha := git.RevParse(child.Name)
+			child.RefSha = newSha
 		} else {
 			fmt.Printf("%s up to date with %s\n", childName, parentName)
 		}
