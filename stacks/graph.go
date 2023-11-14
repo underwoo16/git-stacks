@@ -2,23 +2,15 @@ package stacks
 
 import "github.com/underwoo16/git-stacks/git"
 
-func BuildStackGraphFromScratch() *StackNode {
-	allStacks := getStacks()
-
-	config := GetConfig()
-	trunk := StackNode{
-		Name:     config.Trunk,
-		RefSha:   git.RevParse(config.Trunk),
-		Children: []*StackNode{},
+func GetGraph() *StackNode {
+	if CacheExists() {
+		return GetGraphFromCache()
 	}
 
-	BuildGraphRecursive(&trunk, allStacks)
-
-	return &trunk
+	return GetGraphFromRefs()
 }
 
-// TODO: Benchmark this vs. recursive version ^^^
-func TestGetGraph() *StackNode {
+func GetGraphFromRefs() *StackNode {
 	config := GetConfig()
 	trunk := StackNode{
 		Name:     config.Trunk,
@@ -28,17 +20,15 @@ func TestGetGraph() *StackNode {
 
 	allStacks := getStacks()
 	allStacks = append(allStacks, &trunk)
-	return BuildGraphIterative(allStacks)
+	return BuildGraphIterative(&trunk, allStacks)
 }
 
-func BuildGraphIterative(allStacks []*StackNode) *StackNode {
-	// put each node in map by name
+func BuildGraphIterative(trunk *StackNode, allStacks []*StackNode) *StackNode {
 	stackMap := make(map[string]*StackNode)
 	for _, stack := range allStacks {
 		stackMap[stack.Name] = stack
 	}
 
-	// iterate through all stacks and add children to parent
 	for _, stack := range allStacks {
 		parent := stackMap[stack.ParentBranch]
 		if parent != nil {
@@ -47,26 +37,7 @@ func BuildGraphIterative(allStacks []*StackNode) *StackNode {
 		}
 	}
 
-	trunk := stackMap[GetConfig().Trunk]
 	return trunk
-
-}
-
-func BuildGraphRecursive(trunk *StackNode, allStacks []*StackNode) {
-	for _, stack := range allStacks {
-		if stack.ParentBranch == trunk.Name {
-			stack.Parent = trunk
-			trunk.Children = append(trunk.Children, stack)
-		}
-	}
-
-	if len(trunk.Children) == 0 {
-		return
-	}
-
-	for _, child := range trunk.Children {
-		BuildGraphRecursive(child, allStacks)
-	}
 }
 
 func GetGraphFromCache() *StackNode {

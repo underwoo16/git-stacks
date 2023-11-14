@@ -11,9 +11,8 @@ import (
 func Restack() {
 	// TODO: move this logic to stacks package
 	// TODO: Handle merge failure (e.g. conflicts) and continue
-	// TODO: use cache if exists
 	// TODO: get subtree starting from current branch
-	trunk := stacks.BuildStackGraphFromScratch()
+	trunk := stacks.GetGraph()
 	restackChildren([]*stacks.StackNode{trunk}, trunk.ParentRefSha)
 
 	// TODO: is there a way to rebase other branches without the side effect of switching to them?
