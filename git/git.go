@@ -27,8 +27,8 @@ func GetCurrentSha() string {
 	return RevParse("HEAD")
 }
 
-func RevParse(rev string) string {
-	out, err := exec.Command("git", "rev-parse", rev).Output()
+func RevParse(ref string) string {
+	out, err := exec.Command("git", "rev-parse", ref).Output()
 	utils.CheckError(err)
 	refSha := strings.TrimSpace(string(out))
 	return refSha
@@ -61,6 +61,11 @@ func Show(thing string) string {
 	utils.CheckError(err)
 	result := strings.TrimSpace(string(out))
 	return result
+}
+
+func Rebase(trunk string, branch string) {
+	_, err := exec.Command("git", "rebase", trunk, branch).Output()
+	utils.CheckError(err)
 }
 
 func PassThrough(args []string) {
