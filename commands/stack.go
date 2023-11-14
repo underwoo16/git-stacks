@@ -20,7 +20,7 @@ func Stack(args []string) {
 	stackName := stackNameFromArgs(args)
 	fmt.Printf("Creating stack '%s'...\n", stackName)
 
-	stacks.InsertStack(stackName, parentBranch, parentRefSha)
+	stacks.CreateStack(stackName, parentBranch, parentRefSha)
 
 	fmt.Printf("Done! Switched to new stack '%s'\n", stackName)
 }
