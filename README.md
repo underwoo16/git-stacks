@@ -32,5 +32,6 @@ Functionality:
 Architectural:
 - [x] Cache metadata locally (trunk, branches + children, parent branch + ref)
 - [x] Allow for multiple children per stack
+- [ ] Update cache after any modifications
 - [ ] Add helpful error messages (or at least surface git output)
 - [ ] Handle branches being deleted
