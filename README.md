@@ -13,7 +13,8 @@ Functionality:
 - [x] move to parent stack
 
 "write" command
-- [ ] commit to current branch (ie git commit [--amend])
+- [ ] commit to current branch
+- [ ] restack from current branch 
 - [ ] commit subset of current diff to the branch
 
 "show" command
@@ -31,3 +32,5 @@ Functionality:
 Architectural:
 - [x] Cache metadata locally (trunk, branches + children, parent branch + ref)
 - [x] Allow for multiple children per stack
+- [ ] Add helpful error messages (or at least surface git output)
+- [ ] Handle branches being deleted

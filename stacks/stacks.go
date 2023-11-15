@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/underwoo16/git-stacks/colors"
 	"github.com/underwoo16/git-stacks/git"
 	"github.com/underwoo16/git-stacks/utils"
 )
@@ -106,6 +107,46 @@ func GetCurrentStackNode() *StackNode {
 		return nil
 	}
 
-	currentStack := convertHeadToStack(currentBranch)
-	return readStack(currentStack)
+	trunk := GetGraph()
+	return findStack(trunk, GetNameFromRef(currentBranch))
+}
+
+func findStack(node *StackNode, branch string) *StackNode {
+	if node.Name == branch {
+		return node
+	}
+
+	for _, child := range node.Children {
+		if found := findStack(child, branch); found != nil {
+			return found
+		}
+	}
+
+	return nil
+}
+
+func RestackChildren(children []*StackNode, parentSha string) {
+	for _, child := range children {
+		if child.Parent == nil {
+			RestackChildren(child.Children, child.RefSha)
+			continue
+		}
+
+		childName := colors.CurrentStack(child.Name)
+		parentName := colors.OtherStack(child.Parent.Name)
+		if child.ParentRefSha != parentSha {
+			fmt.Printf("%s restacking onto %s\n", childName, parentName)
+			git.Rebase(child.ParentBranch, child.Name)
+			newSha := git.RevParse(child.Name)
+			child.RefSha = newSha
+			child.ParentRefSha = parentSha
+
+			// TODO: is it better to update the cache here or at the end using full graph?
+			UpdateStack(child)
+		} else {
+			fmt.Printf("%s up to date with %s\n", childName, parentName)
+		}
+
+		RestackChildren(child.Children, child.RefSha)
+	}
 }

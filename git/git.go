@@ -2,6 +2,7 @@ package git
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 
@@ -65,6 +66,22 @@ func Show(thing string) string {
 
 func Rebase(trunk string, branch string) {
 	_, err := exec.Command("git", "rebase", trunk, branch).Output()
+	utils.CheckError(err)
+}
+
+func Commit() {
+	cmd := exec.Command("git", "commit")
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	err := cmd.Run()
+	utils.CheckError(err)
+}
+
+func CommitAmend() {
+	cmd := exec.Command("git", "commit", "--amend")
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	err := cmd.Run()
 	utils.CheckError(err)
 }
 

@@ -26,6 +26,8 @@ func main() {
 		commands.Up()
 	case "restack":
 		commands.Restack()
+	case "write":
+		commands.Write(args[1:])
 	default:
 		commands.PassThrough(args)
 	}

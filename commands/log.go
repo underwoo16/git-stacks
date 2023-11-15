@@ -25,7 +25,6 @@ func Log() {
 	currentBranch := git.GetCurrentBranch()
 	trunk := stacks.GetGraph()
 
-	// TODO: move this logic to stacks package?
 	depthStack, colMap := bfs(trunk, 0, []*stacks.StackNode{}, map[string]int{})
 
 	sb := strings.Builder{}
