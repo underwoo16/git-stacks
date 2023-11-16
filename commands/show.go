@@ -21,7 +21,7 @@ var endBranch = "┘"
 var horizBranch = "├"
 var vertBranch = "┴"
 
-func Log() {
+func Show() {
 	currentBranch := git.GetCurrentBranch()
 	trunk := stacks.GetGraph()
 

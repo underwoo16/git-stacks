@@ -18,8 +18,8 @@ func main() {
 	switch args[0] {
 	case "stack":
 		commands.Stack(args[1:])
-	case "log":
-		commands.Log()
+	case "show":
+		commands.Show()
 	case "down":
 		commands.Down()
 	case "up":

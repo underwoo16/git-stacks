@@ -21,7 +21,7 @@ Functionality:
 - [x] visualize the stack
 - [ ] add commit info
 - [ ] add date/time info
-- [ ] add sync info
+- [x] add sync info
 
 "sync" command
 - [x] rebase everything in current stack
