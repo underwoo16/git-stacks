@@ -133,17 +133,17 @@ func NeedsSync(stack *StackNode) bool {
 	return stack.ParentRefSha != stack.RefSha
 }
 
-func RestackChildren(children []*StackNode, parentSha string) {
+func ResyncChildren(children []*StackNode, parentSha string) {
 	for _, child := range children {
 		if child.Parent == nil {
-			RestackChildren(child.Children, child.RefSha)
+			ResyncChildren(child.Children, child.RefSha)
 			continue
 		}
 
 		childName := colors.CurrentStack(child.Name)
 		parentName := colors.OtherStack(child.Parent.Name)
 		if NeedsSync(child) {
-			fmt.Printf("%s restacking onto %s\n", childName, parentName)
+			fmt.Printf("%s rebasing onto %s\n", childName, parentName)
 			git.Rebase(child.ParentBranch, child.Name)
 			newSha := git.RevParse(child.Name)
 			child.RefSha = newSha
@@ -155,6 +155,6 @@ func RestackChildren(children []*StackNode, parentSha string) {
 			fmt.Printf("%s up to date with %s\n", childName, parentName)
 		}
 
-		RestackChildren(child.Children, child.RefSha)
+		ResyncChildren(child.Children, child.RefSha)
 	}
 }

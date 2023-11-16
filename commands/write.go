@@ -24,6 +24,6 @@ func Write(args []string) {
 		git.Commit()
 	}
 
-	stacks.RestackChildren([]*stacks.StackNode{currentStack}, parentRefSha)
+	stacks.ResyncChildren([]*stacks.StackNode{currentStack}, parentRefSha)
 	git.CheckoutBranch(currentStack.Name)
 }

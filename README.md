@@ -14,7 +14,7 @@ Functionality:
 
 "write" command
 - [ ] commit to current branch
-- [ ] restack from current branch 
+- [ ] sync from current branch 
 - [ ] commit subset of current diff to the branch
 
 "show" command
@@ -23,11 +23,8 @@ Functionality:
 - [ ] add date/time info
 - [ ] add sync info
 
-"restack" command
-- [x] rebase everything in current stack
-
 "sync" command
-- [ ] pull trunk and restack everything
+- [x] rebase everything in current stack
 
 Architectural:
 - [x] Cache metadata locally (trunk, branches + children, parent branch + ref)

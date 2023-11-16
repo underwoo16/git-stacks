@@ -24,8 +24,8 @@ func main() {
 		commands.Down()
 	case "up":
 		commands.Up()
-	case "restack":
-		commands.Restack()
+	case "sync":
+		commands.Sync()
 	case "write":
 		commands.Write(args[1:])
 	default:

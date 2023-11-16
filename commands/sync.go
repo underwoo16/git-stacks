@@ -5,9 +5,9 @@ import (
 	"github.com/underwoo16/git-stacks/stacks"
 )
 
-func Restack() {
+func Sync() {
 	// TODO: Handle merge failure (e.g. conflicts) and continue
 	currentStack := stacks.GetGraph()
-	stacks.RestackChildren([]*stacks.StackNode{currentStack}, currentStack.ParentRefSha)
+	stacks.ResyncChildren([]*stacks.StackNode{currentStack}, currentStack.ParentRefSha)
 	git.CheckoutBranch(currentStack.Name)
 }
