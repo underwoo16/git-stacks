@@ -125,6 +125,14 @@ func findStack(node *StackNode, branch string) *StackNode {
 	return nil
 }
 
+func NeedsSync(stack *StackNode) bool {
+	if stack.Parent == nil {
+		return false
+	}
+
+	return stack.ParentRefSha != stack.RefSha
+}
+
 func RestackChildren(children []*StackNode, parentSha string) {
 	for _, child := range children {
 		if child.Parent == nil {
@@ -134,7 +142,7 @@ func RestackChildren(children []*StackNode, parentSha string) {
 
 		childName := colors.CurrentStack(child.Name)
 		parentName := colors.OtherStack(child.Parent.Name)
-		if child.ParentRefSha != parentSha {
+		if NeedsSync(child) {
 			fmt.Printf("%s restacking onto %s\n", childName, parentName)
 			git.Rebase(child.ParentBranch, child.Name)
 			newSha := git.RevParse(child.Name)

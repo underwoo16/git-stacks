@@ -67,6 +67,10 @@ func writeStackLabel(sb *strings.Builder, node *stacks.StackNode, currentBranch 
 		nodeSuffix = "*"
 	}
 
+	if stacks.NeedsSync(node) {
+		nodeSuffix += " (needs sync)"
+	}
+
 	stackLabel := fmt.Sprintf("%s %s\n", node.Name, nodeSuffix)
 	if node.Name == currentBranch {
 		stackLabel = colors.CurrentStack(stackLabel)
