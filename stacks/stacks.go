@@ -145,11 +145,11 @@ func ResyncChildren(children []*StackNode, parentSha string) {
 		if NeedsSync(child) {
 			fmt.Printf("%s rebasing onto %s\n", childName, parentName)
 			git.Rebase(child.ParentBranch, child.Name)
+
 			newSha := git.RevParse(child.Name)
 			child.RefSha = newSha
 			child.ParentRefSha = parentSha
 
-			// TODO: is it better to update the cache here or at the end using full graph?
 			UpdateStack(child)
 		} else {
 			fmt.Printf("%s up to date with %s\n", childName, parentName)
