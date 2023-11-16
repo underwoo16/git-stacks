@@ -85,6 +85,13 @@ func CommitAmend() {
 	utils.CheckError(err)
 }
 
+func BranchExists(branch string) bool {
+	out, err := exec.Command("git", "branch").Output()
+	utils.CheckError(err)
+	branches := string(out)
+	return strings.Contains(branches, branch)
+}
+
 func PassThrough(args []string) {
 	fmt.Printf(colors.Gray("Running: \""))
 
