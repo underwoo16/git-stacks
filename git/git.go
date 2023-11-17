@@ -106,3 +106,9 @@ func PassThrough(args []string) {
 
 	fmt.Println(string(out))
 }
+
+func LogBetween(from string, to string) string {
+	out, err := exec.Command("git", "log", "--oneline", "--no-decorate", fmt.Sprintf("%s..%s", from, to)).Output()
+	utils.CheckError(err)
+	return string(out)
+}

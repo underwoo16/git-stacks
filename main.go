@@ -28,6 +28,9 @@ func main() {
 		commands.Sync()
 	case "write":
 		commands.Write(args[1:])
+	case "test":
+		// fmt.Println(git.LogBetween("first", "second"))
+		commands.Test()
 	default:
 		commands.PassThrough(args)
 	}
