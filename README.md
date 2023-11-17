@@ -2,7 +2,6 @@ Functionality:
 
 "stack" command
 - [ ] remove a branch from stack (and retarget children)
-- [ ] move directly to a given stack
 
 "down" command
 - [ ] rename
