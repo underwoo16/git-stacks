@@ -103,9 +103,6 @@ func StackExists(ref string) bool {
 
 func GetCurrentStackNode() *StackNode {
 	currentBranch := git.GetCurrentRef()
-	if !StackExists(currentBranch) {
-		return nil
-	}
 
 	trunk := GetGraph()
 	return findStack(trunk, GetNameFromRef(currentBranch))

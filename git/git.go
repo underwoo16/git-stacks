@@ -101,10 +101,10 @@ func PassThrough(args []string) {
 	fmt.Printf(colors.Gray("\"\n"))
 
 	cmd := exec.Command("git", args...)
-	out, err := cmd.Output()
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	err := cmd.Run()
 	utils.CheckError(err)
-
-	fmt.Println(string(out))
 }
 
 func LogBetween(from string, to string) string {

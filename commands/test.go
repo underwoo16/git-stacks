@@ -9,8 +9,8 @@ import (
 
 type branch struct {
 	Name          string
-	CommitMessage string
 	Sha           string
+	CommitMessage string
 }
 
 func Test() {
@@ -46,7 +46,6 @@ func Test() {
 		Size:      4,
 		Searcher:  searcher,
 	}
-
 	i, _, err := prompt.Run()
 
 	if err != nil {

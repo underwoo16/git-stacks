@@ -11,7 +11,7 @@ import (
 func Down() {
 	currentNode := stacks.GetCurrentStackNode()
 
-	if currentNode == nil {
+	if currentNode == nil || currentNode.Parent == nil {
 		fmt.Printf("%s\n", colors.CurrentStack(git.GetCurrentBranch()))
 		fmt.Printf("Already at bottom of stack.\n")
 		return
@@ -19,9 +19,8 @@ func Down() {
 
 	parentBranch := currentNode.ParentBranch
 
-	fmt.Printf("%s\n", colors.OtherStack(currentNode.Name))
-	fmt.Printf("\u2B91  %s\n", parentBranch)
+	fmt.Printf("%s <- %s\n", parentBranch, colors.OtherStack(currentNode.Name))
 
 	git.CheckoutBranch(parentBranch)
-	fmt.Printf("Checked out %s.\n", colors.CurrentStack(parentBranch))
+	fmt.Printf("Switched to %s.\n", colors.CurrentStack(parentBranch))
 }
