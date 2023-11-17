@@ -4,8 +4,12 @@ Functionality:
 - [ ] remove a branch from stack (and retarget children)
 - [ ] move directly to a given stack
 
+"down" command
+- [ ] rename
+
 "up" command
-- [ ] move to child stack - select if many children
+- [x] move to child stack - select if many children
+- [ ] rename
 
 "show" command
 - [ ] add commit info

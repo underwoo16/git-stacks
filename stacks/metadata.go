@@ -56,6 +56,8 @@ func CacheExists() bool {
 
 func GetCache() Cache {
 	if !CacheExists() {
+		// TODO: add trunk here at minimum
+		// could also build graph and populate it fully
 		cache := Cache{Branches: []Branch{}}
 		UpdateCache(cache)
 		return cache

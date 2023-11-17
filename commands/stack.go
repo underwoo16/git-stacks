@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/underwoo16/git-stacks/colors"
 	"github.com/underwoo16/git-stacks/git"
 	"github.com/underwoo16/git-stacks/stacks"
 )
@@ -13,7 +14,7 @@ func Stack(args []string) {
 	parentRefSha := git.GetCurrentSha()
 
 	if !stacks.ConfigExists() {
-		fmt.Println("No stacks config found. Initializing...")
+		fmt.Println("No stacks found. Initializing...")
 		stacks.UpdateConfig(stacks.Config{Trunk: parentBranch})
 	}
 
@@ -27,7 +28,7 @@ func Stack(args []string) {
 
 	stacks.CreateStack(stackName, parentBranch, parentRefSha)
 
-	fmt.Printf("Done! Switched to new stack '%s'\n", stackName)
+	fmt.Printf("Done! Switched to new stack '%s'\n", colors.CurrentStack(stackName))
 }
 
 func stackNameFromArgs(args []string) string {

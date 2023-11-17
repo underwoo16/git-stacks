@@ -75,6 +75,8 @@ func UpdateStack(stack *StackNode) {
 
 	newRef := fmt.Sprintf("refs/stacks/%s", stack.Name)
 	git.UpdateRef(newRef, objectSha)
+
+	// TODO: cachegraph to disk
 }
 
 func CreateStack(name string, parentBranch string, parentRefSha string) {

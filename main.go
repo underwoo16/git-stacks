@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/underwoo16/git-stacks/commands"
+	"github.com/underwoo16/git-stacks/git"
 )
 
 func main() {
@@ -29,8 +30,7 @@ func main() {
 	case "write":
 		commands.Write(args[1:])
 	case "test":
-		// fmt.Println(git.LogBetween("first", "second"))
-		commands.Test()
+		fmt.Println(git.LogBetween("first", "second"))
 	default:
 		commands.PassThrough(args)
 	}

@@ -7,7 +7,9 @@ import (
 
 func Sync() {
 	// TODO: Handle merge failure (e.g. conflicts) and continue
-	currentStack := stacks.GetGraph()
-	stacks.ResyncChildren([]*stacks.StackNode{currentStack}, currentStack.ParentRefSha)
-	git.CheckoutBranch(currentStack.Name)
+	// TODO: sync from current node instead of trunk?
+	trunk := stacks.GetGraph()
+	stacks.ResyncChildren([]*stacks.StackNode{trunk}, trunk.ParentRefSha)
+	git.CheckoutBranch(trunk.Name)
+	stacks.CacheGraphToDisk(trunk)
 }
