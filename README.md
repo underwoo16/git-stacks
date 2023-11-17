@@ -12,7 +12,7 @@ Functionality:
 - [ ] rename
 
 "show" command
-- [ ] add commit info
+- [x] add commit info
 - [ ] add date/time info
 
 "pr submit" command

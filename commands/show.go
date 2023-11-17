@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"math"
 	"strings"
 
 	"github.com/underwoo16/git-stacks/colors"
@@ -31,12 +32,13 @@ func Show() {
 	for depth := len(depthStack) - 1; depth >= 0; depth-- {
 		node := depthStack[depth]
 		col := colMap[node.Name]
+		logBetween := git.LogBetween(node.ParentBranch, node.Name)
 
 		writeRow(&sb, col)
 		writeStackLabel(&sb, node, currentBranch)
 
 		if depth > 0 {
-			writeColumns(&sb, col)
+			writeColumns(&sb, col, logBetween)
 
 			if col > 0 && isLowestChild(node, depth, depthStack) {
 				writeConnectingBranches(&sb, col)
@@ -81,12 +83,25 @@ func writeStackLabel(sb *strings.Builder, node *stacks.StackNode, currentBranch 
 	sb.WriteString(nodePrefix + " " + stackLabel)
 }
 
-func writeColumns(sb *strings.Builder, col int) {
-	for i := 0; i < 3; i++ {
+// TODO: clean this up
+//
+//	maybe move splitting the logs to array in git package
+func writeColumns(sb *strings.Builder, col int, log string) {
+	logs := strings.FieldsFunc(log, func(r rune) bool {
+		return r == '\n'
+	})
+
+	numVerticals := int(math.Max(3, float64(len(logs)+2)))
+	for i := 0; i < numVerticals; i++ {
 		sb.WriteString(vertical)
 		for i := 0; i < col; i++ {
 			sb.WriteString(spacer)
 			sb.WriteString(vertical)
+		}
+
+		logIdx := i - 1
+		if logIdx >= 0 && logIdx < len(logs) {
+			sb.WriteString(" " + colors.Gray(logs[logIdx]))
 		}
 		sb.WriteString("\n")
 	}
