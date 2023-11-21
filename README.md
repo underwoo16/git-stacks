@@ -1,6 +1,6 @@
 Functionality:
 
-"stack" command
+"delete" command
 - [ ] remove a branch from stack (and retarget children)
 
 "down" command
@@ -15,17 +15,15 @@ Functionality:
 - [ ] add date/time info
 
 "pr submit" command
-- [ ] Opens pull request from current stack into parent
-- [ ] Optional flag to also open pull request for all stacks above current stack (whole tree)
+- [x] Opens pull request from current stack into parent
+- [x] Opens pull requests for all children into current stack (and so on and so forth)
 - [ ] Checks for existing pull requests first
 - [ ] Adds comment tracking all PR(s) in stack
-
-"pr update" command
-- [ ] Finds existing PR(s) and updates them
-- [ ] Updates comment tracking all PR(s) in stack
+- [ ] Updates PRs if they already exist (resync and force push and update comments)
 
 Architectural:
 - [ ] Update cache after any modifications
 - [ ] Add helpful error messages (or at least surface git output)
-- [ ] Add continue ability for sync operation
+- [ ] Add continue ability for sync operation (use rerere)
 - [ ] Handle branches being deleted
+- [ ] Rebuild stack based on local refs/heads with shared history (useful for codespaces)

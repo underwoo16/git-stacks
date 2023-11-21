@@ -112,3 +112,13 @@ func LogBetween(from string, to string) string {
 	utils.CheckError(err)
 	return string(out)
 }
+
+func PushBranch(branch string) {
+	_, err := exec.Command("git", "push", "-u", "origin", branch).Output()
+	utils.CheckError(err)
+}
+
+func ForcePushBranch(branch string) {
+	_, err := exec.Command("git", "push", "-f", "-u", "origin", branch).Output()
+	utils.CheckError(err)
+}

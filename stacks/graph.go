@@ -7,7 +7,9 @@ func GetGraph() *StackNode {
 		return GetGraphFromCache()
 	}
 
-	return GetGraphFromRefs()
+	graph := GetGraphFromRefs()
+	CacheGraphToDisk(graph)
+	return graph
 }
 
 func GetGraphFromRefs() *StackNode {

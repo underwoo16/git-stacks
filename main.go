@@ -27,6 +27,8 @@ func main() {
 		commands.Up()
 	case "sync":
 		commands.Sync()
+	case "pr":
+		commands.Pr(args[1:])
 	case "write":
 		commands.Write(args[1:])
 	case "test":
