@@ -32,10 +32,15 @@ func submit() {
 	// TODO: add progress logging
 	currentStack := stacks.GetCurrentStackNode()
 	stacks.ResyncChildren([]*stacks.StackNode{currentStack}, currentStack.ParentRefSha)
-	submitPullRequests(currentStack)
+
+	// TODO: can store pull requests in map for easy lookup
+	pullRequests := git.GetPullRequests()
+	submitPullRequests(currentStack, pullRequests)
+
+	// TODO: should we cache PR info?
 }
 
-func submitPullRequests(stackNode *stacks.StackNode) {
+func submitPullRequests(stackNode *stacks.StackNode, existingPullRequests []git.PullRequest) {
 	if stackNode == nil {
 		return
 	}
@@ -43,17 +48,34 @@ func submitPullRequests(stackNode *stacks.StackNode) {
 	fmt.Printf("Pushing branches...\n")
 
 	// TODO: Don't push trunk
+	// TODO: Don't push branches that are already pushed - can store in map
 	git.ForcePushBranch(stackNode.ParentBranch)
 	git.ForcePushBranch(stackNode.Name)
 
-	// TODO: If PR exists, don't submit
-	fmt.Printf("Submitting PR for %s <- %s\n", stackNode.ParentBranch, stackNode.Name)
+	pullRequest := pullRequestFor(stackNode.ParentBranch, stackNode.Name, existingPullRequests)
+	if pullRequest != nil {
+		fmt.Printf("PR already exists for %s <- %s\n", stackNode.ParentBranch, stackNode.Name)
+		fmt.Printf("%s\n", pullRequest.Url)
+	} else {
+		fmt.Printf("Submitting PR for %s <- %s\n", stackNode.ParentBranch, stackNode.Name)
+		git.CreatePullRequest(stackNode.ParentBranch, stackNode.Name)
+	}
 
-	git.CreatePullRequest(stackNode.ParentBranch, stackNode.Name)
+	fmt.Println()
 
 	for _, child := range stackNode.Children {
-		submitPullRequests(child)
+		submitPullRequests(child, existingPullRequests)
 	}
+}
+
+// TODO: can store pull requests in map for easy lookup
+func pullRequestFor(base string, head string, pulls []git.PullRequest) *git.PullRequest {
+	for _, pull := range pulls {
+		if pull.BaseRefName == base && pull.HeadRefName == head {
+			return &pull
+		}
+	}
+	return nil
 }
 
 func update() {

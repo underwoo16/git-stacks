@@ -32,7 +32,8 @@ func main() {
 	case "write":
 		commands.Write(args[1:])
 	case "test":
-		fmt.Println(git.LogBetween("first", "second"))
+		// fmt.Println(git.LogBetween("first", "second"))
+		fmt.Println(git.GetPullRequests())
 	default:
 		commands.PassThrough(args)
 	}
