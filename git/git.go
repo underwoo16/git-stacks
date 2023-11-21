@@ -64,9 +64,9 @@ func Show(thing string) string {
 	return result
 }
 
-func Rebase(trunk string, branch string) {
+func Rebase(trunk string, branch string) error {
 	_, err := exec.Command("git", "rebase", trunk, branch).Output()
-	utils.CheckError(err)
+	return err
 }
 
 func Commit() {

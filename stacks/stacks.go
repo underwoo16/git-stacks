@@ -134,6 +134,8 @@ func NeedsSync(stack *StackNode) bool {
 
 func ResyncChildren(children []*StackNode, parentSha string) {
 	for _, child := range children {
+		fmt.Printf("Resyncing %s\n", child.Name)
+		fmt.Printf("Parent: %s\n", child.Parent)
 		if child.Parent == nil {
 			ResyncChildren(child.Children, child.RefSha)
 			continue
@@ -143,7 +145,17 @@ func ResyncChildren(children []*StackNode, parentSha string) {
 		parentName := colors.OtherStack(child.Parent.Name)
 		if NeedsSync(child) {
 			fmt.Printf("%s rebasing onto %s\n", childName, parentName)
-			git.Rebase(child.ParentBranch, child.Name)
+			err := git.Rebase(child.ParentBranch, child.Name)
+			if err != nil {
+				fmt.Printf("%s rebase failed\n", childName)
+				fmt.Printf("Resolve conflicts and run %s\n", colors.Yellow("git-stacks continue"))
+				fmt.Printf("Alternatively, run %s to abort the rebase\n", colors.Yellow("git-stacks rebase --abort"))
+
+				// TODO: Store continue info in a file
+				// 		 should be the branch we are currently rebasing
+				//       and the parent branch
+				os.Exit(1)
+			}
 
 			newSha := git.RevParse(child.Name)
 			child.RefSha = newSha

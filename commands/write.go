@@ -18,6 +18,7 @@ func Write(args []string) {
 	parentRefSha := git.RevParse(currentStack.ParentBranch)
 
 	// TODO: check if -m passed to avoid vim
+	// TODO: we don't need to amend, lets just add new commits
 	if refSha != parentRefSha {
 		git.CommitAmend()
 	} else {

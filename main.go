@@ -17,6 +17,8 @@ func main() {
 	}
 
 	switch args[0] {
+	case "continue":
+		commands.Continue()
 	case "stack":
 		commands.Stack(args[1:])
 	case "show":
@@ -33,7 +35,10 @@ func main() {
 		commands.Write(args[1:])
 	case "test":
 		// fmt.Println(git.LogBetween("first", "second"))
-		fmt.Println(git.GetPullRequests())
+		err := git.Rebase("first", "second")
+		if err != nil {
+			fmt.Println("Need to resolve conflicts and then run 'git-stacks continue'")
+		}
 	default:
 		commands.PassThrough(args)
 	}

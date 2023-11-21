@@ -62,6 +62,11 @@ func GetGraphFromCache() *StackNode {
 		for _, child := range branch.Children {
 			node.Children = append(node.Children, stackMap[child])
 		}
+
+		parentNode := stackMap[branch.ParentBranchName]
+		if parentNode != nil {
+			node.Parent = parentNode
+		}
 	}
 
 	trunkName := GetConfig().Trunk
