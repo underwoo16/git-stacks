@@ -1,5 +1,9 @@
 Functionality:
 
+"push" command
+- [ ] pushes current stack
+- [ ] "all" modifier force pushes all stacks
+
 "delete" command
 - [ ] remove a branch from stack (and retarget children)
 
@@ -7,16 +11,12 @@ Functionality:
 - [ ] rename
 
 "up" command
-- [x] move to child stack - select if many children
 - [ ] rename
 
 "show" command
-- [x] add commit info
 - [ ] add date/time info
 
-"pr submit" command
-- [x] Opens pull request from current stack into parent
-- [x] Opens pull requests for all children into current stack (and so on and so forth)
+"pr" command
 - [ ] Checks for existing pull requests first
 - [ ] Adds comment tracking all PR(s) in stack
 - [ ] Updates PRs if they already exist (resync and force push and update comments)

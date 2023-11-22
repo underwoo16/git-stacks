@@ -10,6 +10,7 @@ import (
 	"github.com/underwoo16/git-stacks/stacks"
 )
 
+// TODO: use rerere
 func Sync() {
 	// TODO: Handle merge failure (e.g. conflicts) and continue
 	fmt.Printf("Syncing stacks...\n")
