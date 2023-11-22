@@ -7,6 +7,7 @@ import (
 	"github.com/underwoo16/git-stacks/stacks"
 )
 
+// TODO: fix this method
 func Write(args []string) {
 	// TODO: Check if on a stack
 	// TODO: Check if any changes to commit
@@ -14,17 +15,10 @@ func Write(args []string) {
 	fmt.Println("Writing to stack...")
 	currentStack := stacks.GetCurrentStackNode()
 
-	refSha := git.RevParse(currentStack.Name)
-	parentRefSha := git.RevParse(currentStack.ParentBranch)
-
 	// TODO: check if -m passed to avoid vim
 	// TODO: we don't need to amend, lets just add new commits
-	if refSha != parentRefSha {
-		git.CommitAmend()
-	} else {
-		git.Commit()
-	}
+	git.Commit()
 
-	stacks.ResyncChildren([]*stacks.StackNode{currentStack}, parentRefSha)
+	// stacks.ResyncChildren([]*stacks.StackNode{currentStack}, parentRefSha)
 	git.CheckoutBranch(currentStack.Name)
 }

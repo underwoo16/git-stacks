@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/underwoo16/git-stacks/git"
+	"github.com/underwoo16/git-stacks/queue"
 	"github.com/underwoo16/git-stacks/utils"
 )
 
@@ -21,6 +22,12 @@ type Branch struct {
 	ParentBranchName     string
 	ParentBranchRevision string
 	Children             []string
+}
+
+type ContinueInfo struct {
+	ContinueBranch string
+	OriginalBranch string
+	Branches       []string
 }
 
 func ConfigExists() bool {
@@ -77,4 +84,26 @@ func UpdateCache(cache Cache) {
 	utils.CheckError(err)
 
 	utils.WriteByteArrayToFile(b, ".git/.stacks_cache")
+}
+
+func StoreContinueInfo(branch string, queue *queue.Queue) {
+	var branches []string
+	for !queue.IsEmpty() {
+		stack := queue.Pop().(*StackNode)
+		branches = append(branches, stack.Name)
+	}
+
+	continueInfo := ContinueInfo{ContinueBranch: branch, Branches: branches}
+	b, err := json.Marshal(continueInfo)
+	utils.CheckError(err)
+
+	utils.WriteByteArrayToFile(b, ".git/.stacks_continue")
+}
+
+func GetContinueInfo() ContinueInfo {
+	ba := utils.ReadFileToByteArray(".git/.stacks_continue")
+	var continueInfo ContinueInfo
+	utils.CheckError(json.Unmarshal(ba, &continueInfo))
+
+	return continueInfo
 }

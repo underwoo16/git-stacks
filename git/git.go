@@ -69,6 +69,14 @@ func Rebase(trunk string, branch string) error {
 	return err
 }
 
+func RebaseContinue() {
+	cmd := exec.Command("git", "rebase", "--continue")
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	err := cmd.Run()
+	utils.CheckError(err)
+}
+
 func Commit() {
 	cmd := exec.Command("git", "commit")
 	cmd.Stdin = os.Stdin
