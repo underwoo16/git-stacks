@@ -3,6 +3,7 @@ package stacks
 import (
 	"encoding/json"
 
+	"github.com/underwoo16/git-stacks/git"
 	"github.com/underwoo16/git-stacks/utils"
 )
 
@@ -36,7 +37,8 @@ func UpdateConfig(config Config) {
 
 func GetConfig() Config {
 	if !ConfigExists() {
-		config := Config{}
+		currentBranch := git.GetCurrentBranch()
+		config := Config{Trunk: currentBranch}
 		UpdateConfig(config)
 		return config
 	}
