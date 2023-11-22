@@ -27,3 +27,4 @@ Architectural:
 - [ ] Add continue ability for sync operation (use rerere)
 - [ ] Handle branches being deleted
 - [ ] Rebuild stack based on local refs/heads with shared history (useful for codespaces)
+- [ ] Be more thoughtful about how to initialize trunk when no config exists
