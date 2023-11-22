@@ -134,8 +134,6 @@ func NeedsSync(stack *StackNode) bool {
 
 func ResyncChildren(children []*StackNode, parentSha string) {
 	for _, child := range children {
-		fmt.Printf("Resyncing %s\n", child.Name)
-		fmt.Printf("Parent: %s\n", child.Parent)
 		if child.Parent == nil {
 			ResyncChildren(child.Children, child.RefSha)
 			continue
