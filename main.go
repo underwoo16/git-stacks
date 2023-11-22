@@ -5,27 +5,41 @@ import (
 	"os"
 
 	"github.com/underwoo16/git-stacks/commands"
+	"github.com/underwoo16/git-stacks/git"
 )
 
 func main() {
-	allArgs := os.Args[1:]
+	args := os.Args[1:]
 
-	if len(allArgs) == 0 {
+	if len(args) == 0 {
 		fmt.Println("No command provided")
 		os.Exit(1)
 	}
 
-	commandArgs := allArgs[1:]
-	switch allArgs[0] {
+	switch args[0] {
+	case "continue":
+		commands.Continue()
 	case "stack":
-		commands.Stack(commandArgs)
-	case "log":
-		commands.Log()
+		commands.Stack(args[1:])
+	case "show":
+		commands.Show()
 	case "down":
 		commands.Down()
 	case "up":
 		commands.Up()
+	case "sync":
+		commands.Sync()
+	case "pr":
+		commands.Pr(args[1:])
+	case "write":
+		commands.Write(args[1:])
+	case "test":
+		// fmt.Println(git.LogBetween("first", "second"))
+		err := git.Rebase("first", "second")
+		if err != nil {
+			fmt.Println("Need to resolve conflicts and then run 'git-stacks continue'")
+		}
 	default:
-		commands.PassThrough(allArgs)
+		commands.PassThrough(args)
 	}
 }

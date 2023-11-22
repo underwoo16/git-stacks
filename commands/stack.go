@@ -4,33 +4,31 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/underwoo16/git-stacks/colors"
 	"github.com/underwoo16/git-stacks/git"
-	"github.com/underwoo16/git-stacks/utils"
+	"github.com/underwoo16/git-stacks/stacks"
 )
 
 func Stack(args []string) {
-	stackName := stackNameFromArgs(args)
-	msg := fmt.Sprintf("Creating stack '%s'...", stackName)
-	fmt.Println(msg)
-
-	parentBranchRef := git.GetCurrentRef()
-
+	parentBranch := git.GetCurrentBranch()
 	parentRefSha := git.GetCurrentSha()
 
-	tempFilePath := fmt.Sprintf(".git/temp-%s", stackName)
-	hashObject := fmt.Sprintf("%s\n%s", parentBranchRef, parentRefSha)
-	utils.WriteToFile(tempFilePath, hashObject)
+	if !stacks.ConfigExists() {
+		fmt.Println("No stacks found. Initializing...")
+		stacks.UpdateConfig(stacks.Config{Trunk: parentBranch})
+	}
 
-	objectSha := git.CreateHashObject(tempFilePath)
-	utils.RemoveFile(tempFilePath)
+	stackName := stackNameFromArgs(args)
+	if git.BranchExists(stackName) {
+		fmt.Printf("Branch '%s' already exists\n", stackName)
+		os.Exit(1)
+	}
 
-	newRef := fmt.Sprintf("refs/stacks/%s", stackName)
-	git.UpdateRef(newRef, objectSha)
+	fmt.Printf("Creating stack '%s'...\n", stackName)
 
-	git.CreateAndCheckoutBranch(stackName)
+	stacks.CreateStack(stackName, parentBranch, parentRefSha)
 
-	msg = fmt.Sprintf("Done! Switched to new stack '%s'", stackName)
-	fmt.Println(msg)
+	fmt.Printf("Done! Switched to new stack '%s'\n", colors.CurrentStack(stackName))
 }
 
 func stackNameFromArgs(args []string) string {

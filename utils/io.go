@@ -55,3 +55,13 @@ func ReadLine(filePath string) string {
 
 	return result
 }
+
+func ReadFileToByteArray(filePath string) []byte {
+	b, err := os.ReadFile(filePath)
+	CheckError(err)
+	return b
+}
+
+func WriteByteArrayToFile(b []byte, filePath string) {
+	os.WriteFile(filePath, b, 0644)
+}

@@ -2,25 +2,55 @@ package commands
 
 import (
 	"fmt"
+	"log"
 
+	"github.com/manifoldco/promptui"
 	"github.com/underwoo16/git-stacks/colors"
 	"github.com/underwoo16/git-stacks/git"
+	"github.com/underwoo16/git-stacks/prompts"
 	"github.com/underwoo16/git-stacks/stacks"
 )
 
 func Up() {
 	currentNode := stacks.GetCurrentStackNode()
-	childNode := currentNode.Child
+	if currentNode == nil {
+		log.Fatal("Not on a known stack.")
+	}
 
-	if childNode == nil {
-		fmt.Printf("%s\n", currentNode.Name)
-		fmt.Printf("Already at top of stack.\n")
+	children := currentNode.Children
+
+	if len(children) == 0 {
+		log.Fatalf("No stacks on top of %s\n", colors.CurrentStack(currentNode.Name))
+	}
+
+	if len(children) == 1 {
+		switchToFrom(children[0].Name, currentNode.Name)
 		return
 	}
 
-	fmt.Printf("\u21B1 %s\n", colors.Purple(childNode.Name))
-	fmt.Printf("%s\n", currentNode.Name)
+	branches := []string{}
+	for _, child := range children {
+		branches = append(branches, child.Name)
+	}
 
-	git.CheckoutBranch(childNode.Name)
-	fmt.Printf("Checked out %s.\n", colors.Blue(childNode.Name))
+	r := prompts.PromptUser(branches, "Select child branch", branchPromptTemplate())
+	switchToFrom(r, currentNode.Name)
+}
+
+func switchToFrom(to string, from string) {
+	fmt.Printf("%s -> %s\n", colors.OtherStack(from), to)
+
+	git.CheckoutBranch(to)
+	fmt.Printf("Switched to %s.\n", colors.CurrentStack(to))
+}
+
+func branchPromptTemplate() *promptui.SelectTemplates {
+	templates := &promptui.SelectTemplates{
+		Label:    "{{ . }}",
+		Active:   "-> {{ . | green }}",
+		Inactive: "{{ . | yellow }}",
+		Selected: "* {{ . | green }}",
+	}
+
+	return templates
 }

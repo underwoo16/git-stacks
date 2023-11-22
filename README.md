@@ -1,34 +1,30 @@
 Functionality:
 
-"stack" command
-- [x] start a new stack (ie git checkout -b <branch>-<stack>-1)
-- [x] add a new branch to stack (ie git checkout -b <branch>-<stack>-<n+1>)
-- [ ] remove a branch from stack (and retarget children)
-- [ ] move directly to a given stack
-- [ ] offer to commit working tree before stacking
+"push" command
+- [ ] pushes current stack
+- [ ] "all" modifier force pushes all stacks
 
-"up" command
-- [x] move to child stack
+"delete" command
+- [ ] remove a branch from stack (and retarget children)
 
 "down" command
-- [x] move to parent stack
+- [ ] rename
 
-"write" command
-- [ ] commit to current branch (ie git commit [--amend])
-- [ ] commit subset of current diff to the branch
+"up" command
+- [ ] rename
 
 "show" command
-- [x] visualize the stack
-- [ ] add commit info
 - [ ] add date/time info
-- [ ] add sync info
 
-"restack" command
-- [ ] rebase everything in current stack
-
-"sync" command
-- [ ] pull trunk and restack everything
+"pr" command
+- [ ] Checks for existing pull requests first
+- [ ] Adds comment tracking all PR(s) in stack
+- [ ] Updates PRs if they already exist (resync and force push and update comments)
 
 Architectural:
-- [ ] Cache metadata locally (trunk, branches + children, parent branch + ref)
-- [ ] Allow for multiple children per stack
+- [ ] Update cache after any modifications
+- [ ] Add helpful error messages (or at least surface git output)
+- [ ] Add continue ability for sync operation (use rerere)
+- [ ] Handle branches being deleted
+- [ ] Rebuild stack based on local refs/heads with shared history (useful for codespaces)
+- [ ] Be more thoughtful about how to initialize trunk when no config exists

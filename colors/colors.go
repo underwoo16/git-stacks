@@ -12,6 +12,17 @@ var cyan = "\033[36m"
 var gray = "\033[37m"
 var white = "\033[97m"
 
+var otherStack = "\033[38;5;222m"
+var currentStack = "\033[38;5;114m"
+
+func OtherStack(str string) string {
+	return fmt.Sprintf(otherStack + str + reset)
+}
+
+func CurrentStack(str string) string {
+	return fmt.Sprintf(currentStack + str + reset)
+}
+
 func Red(str string) string {
 	return fmt.Sprintf(red + str + reset)
 }
