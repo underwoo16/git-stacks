@@ -129,7 +129,8 @@ func NeedsSync(stack *StackNode) bool {
 		return false
 	}
 
-	return stack.ParentRefSha != stack.RefSha
+	actualParentSha := git.RevParse(stack.ParentBranch)
+	return stack.ParentRefSha != actualParentSha
 }
 
 func ResyncChildren(children []*StackNode, parentSha string) {
