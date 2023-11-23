@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/underwoo16/git-stacks/commands"
-	"github.com/underwoo16/git-stacks/git"
 )
 
 func main() {
@@ -31,14 +30,12 @@ func main() {
 		commands.Sync()
 	case "pr":
 		commands.Pr(args[1:])
+	case "push-stack":
+		commands.Push(args[1:])
 	case "write":
 		commands.Write(args[1:])
 	case "test":
 		// fmt.Println(git.LogBetween("first", "second"))
-		err := git.Rebase("first", "second")
-		if err != nil {
-			fmt.Println("Need to resolve conflicts and then run 'git-stacks continue'")
-		}
 	default:
 		commands.PassThrough(args)
 	}

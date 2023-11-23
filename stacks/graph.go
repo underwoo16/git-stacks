@@ -76,9 +76,17 @@ func GetGraphFromCache() *StackNode {
 }
 
 func CacheGraphToDisk(trunk *StackNode) {
+	trunk = FindTrunk(trunk)
 	branches := bfs(trunk, []Branch{})
 	UpdateCache(Cache{Branches: branches})
+}
 
+func FindTrunk(node *StackNode) *StackNode {
+	if node.Parent == nil {
+		return node
+	}
+
+	return FindTrunk(node.Parent)
 }
 
 func bfs(node *StackNode, arr []Branch) []Branch {
