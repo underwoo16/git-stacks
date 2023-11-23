@@ -16,12 +16,12 @@ func Sync() {
 	fmt.Printf("Syncing stacks...\n")
 	currentBranch := git.GetCurrentBranch()
 	trunk := stacks.GetGraph()
-	resync(trunk)
+	Resync(trunk)
 	stacks.CacheGraphToDisk(trunk)
 	git.CheckoutBranch(currentBranch)
 }
 
-func resync(trunk *stacks.StackNode) {
+func Resync(trunk *stacks.StackNode) {
 	syncQueue := queue.New()
 	syncQueue.Push(trunk)
 

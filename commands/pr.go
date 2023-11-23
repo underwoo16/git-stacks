@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/underwoo16/git-stacks/colors"
 	"github.com/underwoo16/git-stacks/git"
 	"github.com/underwoo16/git-stacks/queue"
 	"github.com/underwoo16/git-stacks/stacks"
@@ -12,29 +13,29 @@ import (
 func Pr(args []string) {
 	fmt.Println("pr")
 
-	// TODO: consider existing pull requests before submitting new ones
-
 	currentStack := stacks.GetCurrentStackNode()
+	pullRequests := git.GetPullRequests()
 	if len(args) < 1 {
-		submitPullRequestForStack(currentStack)
+		git.Rebase(currentStack.ParentBranch, currentStack.Name)
+		submitPullRequestForStack(currentStack, pullRequests)
 	}
 
 	if args[0] == "all" {
-		// TODO: submit pull requests for all stacks
-		submitAllPullRequests(currentStack)
+		submitAllPullRequests(pullRequests)
 	}
 }
 
-func submitAllPullRequests(stack *stacks.StackNode) {
-	// TODO: resync all stacks
+func submitAllPullRequests(pullRequests []git.PullRequest) {
+	trunk := stacks.GetGraph()
+	Resync(trunk)
 
 	prQueue := queue.New()
-	prQueue.Push(stack)
+	prQueue.Push(trunk)
 
 	for !prQueue.IsEmpty() {
 		stack := prQueue.Pop().(*stacks.StackNode)
 
-		submitPullRequestForStack(stack)
+		submitPullRequestForStack(stack, pullRequests)
 
 		for _, child := range stack.Children {
 			prQueue.Push(child)
@@ -42,7 +43,7 @@ func submitAllPullRequests(stack *stacks.StackNode) {
 	}
 }
 
-func submitPullRequestForStack(stack *stacks.StackNode) {
+func submitPullRequestForStack(stack *stacks.StackNode, pullRequests []git.PullRequest) {
 	if stack == nil {
 		fmt.Println("No stack found")
 		os.Exit(1)
@@ -54,10 +55,24 @@ func submitPullRequestForStack(stack *stacks.StackNode) {
 		os.Exit(1)
 	}
 
-	// TODO: make this optional in case we already synced the stack
-	git.Rebase(parent.Name, stack.Name)
+	pullRequest := pullRequestFor(stack.Name, parent.Name, pullRequests)
+	if pullRequest != nil {
+		fmt.Printf("Pull request already exists for %s\n", stack.Name)
+		fmt.Printf("View it here: %s\n", colors.Blue(pullRequest.Url))
+		return
+	}
 
 	git.ForcePushBranch(stack.Name)
 
 	git.CreatePullRequest(parent.Name, stack.Name)
+}
+
+func pullRequestFor(head string, base string, pulls []git.PullRequest) *git.PullRequest {
+	for _, pull := range pulls {
+		if pull.HeadRefName == head && pull.BaseRefName == base {
+			return &pull
+		}
+	}
+	return nil
+
 }

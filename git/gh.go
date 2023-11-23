@@ -19,7 +19,7 @@ type PullRequest struct {
 // TODO: Add func to test if gh is installed
 
 func GetPullRequests() []PullRequest {
-	out, err := exec.Command("gh", "pr", "list", "--json", "number,baseRefName,headRefName,url").Output()
+	out, err := exec.Command("gh", "pr", "list", "--author", "@me", "--json", "number,baseRefName,headRefName,url").Output()
 	utils.CheckError(err)
 
 	pullRequests := []PullRequest{}
