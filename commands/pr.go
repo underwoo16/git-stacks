@@ -10,18 +10,24 @@ import (
 )
 
 func Pr(args []string) {
-	fmt.Println("pr")
-
 	currentStack := stacks.GetCurrentStackNode()
 	pullRequests := git.GetPullRequests()
 	if len(args) < 1 {
 		git.Rebase(currentStack.ParentBranch, currentStack.Name)
 		submitPullRequestForStack(currentStack, pullRequests)
+
+		git.CheckoutBranch(currentStack.Name)
 		return
 	}
 
 	if args[0] == "all" {
-		submitAllPullRequests(pullRequests)
+		trunk := stacks.GetGraph()
+		Resync(trunk)
+		stacks.CacheGraphToDisk(trunk)
+
+		submitAllPullRequests(trunk, pullRequests)
+
+		git.CheckoutBranch(currentStack.Name)
 		return
 	}
 
@@ -29,10 +35,7 @@ func Pr(args []string) {
 	fmt.Println("Invalid arguments")
 }
 
-func submitAllPullRequests(pullRequests []git.PullRequest) {
-	trunk := stacks.GetGraph()
-	Resync(trunk)
-
+func submitAllPullRequests(trunk *stacks.StackNode, pullRequests []git.PullRequest) {
 	prQueue := queue.New()
 	prQueue.Push(trunk)
 
@@ -76,5 +79,4 @@ func pullRequestFor(head string, base string, pulls []git.PullRequest) *git.Pull
 		}
 	}
 	return nil
-
 }
