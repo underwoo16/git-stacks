@@ -2,7 +2,6 @@ package commands
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/underwoo16/git-stacks/colors"
 	"github.com/underwoo16/git-stacks/git"
@@ -18,11 +17,16 @@ func Pr(args []string) {
 	if len(args) < 1 {
 		git.Rebase(currentStack.ParentBranch, currentStack.Name)
 		submitPullRequestForStack(currentStack, pullRequests)
+		return
 	}
 
 	if args[0] == "all" {
 		submitAllPullRequests(pullRequests)
+		return
 	}
+
+	// TODO: add help message
+	fmt.Println("Invalid arguments")
 }
 
 func submitAllPullRequests(pullRequests []git.PullRequest) {
@@ -35,24 +39,22 @@ func submitAllPullRequests(pullRequests []git.PullRequest) {
 	for !prQueue.IsEmpty() {
 		stack := prQueue.Pop().(*stacks.StackNode)
 
-		submitPullRequestForStack(stack, pullRequests)
-
 		for _, child := range stack.Children {
 			prQueue.Push(child)
 		}
+
+		submitPullRequestForStack(stack, pullRequests)
 	}
 }
 
 func submitPullRequestForStack(stack *stacks.StackNode, pullRequests []git.PullRequest) {
 	if stack == nil {
-		fmt.Println("No stack found")
-		os.Exit(1)
+		return
 	}
 
 	parent := stack.Parent
 	if parent == nil {
-		fmt.Println("No parent branch found")
-		os.Exit(1)
+		return
 	}
 
 	pullRequest := pullRequestFor(stack.Name, parent.Name, pullRequests)

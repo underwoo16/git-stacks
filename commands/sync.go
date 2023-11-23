@@ -40,7 +40,7 @@ func SyncStack(stack *stacks.StackNode, syncQueue *queue.Queue) {
 		return
 	}
 
-	fmt.Printf("Syncing %s onto %s\n", stack.Name, stack.ParentBranch)
+	fmt.Printf("Rebasing %s onto %s\n", colors.CurrentStack(stack.Name), colors.OtherStack(stack.ParentBranch))
 
 	err := git.Rebase(stack.ParentBranch, stack.Name)
 	if err != nil {
