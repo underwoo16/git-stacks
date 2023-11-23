@@ -101,12 +101,12 @@ func BranchExists(branch string) bool {
 }
 
 func PassThrough(args []string) {
-	fmt.Printf(colors.Gray("Running: \""))
+	fmt.Printf(colors.Gray("Running \""))
 
 	cmdStr := fmt.Sprintf("git %s", strings.Join(args, " "))
 	fmt.Printf(colors.Yellow(cmdStr))
 
-	fmt.Printf(colors.Gray("\"\n"))
+	fmt.Printf(colors.Gray("\" via git\n\n"))
 
 	cmd := exec.Command("git", args...)
 	cmd.Stdin = os.Stdin
