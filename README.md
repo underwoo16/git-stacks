@@ -1,30 +1,32 @@
-Functionality:
 
-"push" command
-- [ ] pushes current stack
-- [ ] "all" modifier force pushes all stacks
+# git-stacks
 
-"delete" command
-- [ ] remove a branch from stack (and retarget children)
+Git utility for managing stacked branches - allowing developers to easily leverage smaller, dependent pull requests.
 
-"down" command
-- [ ] rename
 
-"up" command
-- [ ] rename
+## Usage/Examples
 
-"show" command
-- [ ] add date/time info
+#### Create new "stack" named "feature_branch"
+```cli
+gs stack feature_branch
+```
 
-"pr" command
-- [ ] Checks for existing pull requests first
-- [ ] Adds comment tracking all PR(s) in stack
-- [ ] Updates PRs if they already exist (resync and force push and update comments)
+#### View the current stack
+```cli
+gs show
+```
 
-Architectural:
-- [ ] Update cache after any modifications
-- [ ] Add helpful error messages (or at least surface git output)
-- [ ] Add continue ability for sync operation (use rerere)
-- [ ] Handle branches being deleted
-- [ ] Rebuild stack based on local refs/heads with shared history (useful for codespaces)
-- [ ] Be more thoughtful about how to initialize trunk when no config exists
+#### Rebase all stacks
+```cli
+gs sync
+```
+
+#### Create pull request from current stack into its parent
+```cli
+gs pr
+```
+
+#### Create pull requests for each stack
+```cli
+gs pr all
+```
