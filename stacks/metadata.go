@@ -2,6 +2,7 @@ package stacks
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/underwoo16/git-stacks/git"
 	"github.com/underwoo16/git-stacks/queue"
@@ -38,8 +39,8 @@ func UpdateConfig(config Config) {
 	b, err := json.Marshal(config)
 	utils.CheckError(err)
 
-	// TODO: use dynamic .git path
-	utils.WriteByteArrayToFile(b, ".git/.stacks_config")
+	configPath := fmt.Sprintf("%s/.stacks_config", git.DirectoryPath())
+	utils.WriteByteArrayToFile(b, configPath)
 }
 
 func GetConfig() Config {
@@ -50,8 +51,8 @@ func GetConfig() Config {
 		return config
 	}
 
-	// TODO: use dynamic .git path
-	ba := utils.ReadFileToByteArray(".git/.stacks_config")
+	configPath := fmt.Sprintf("%s/.stacks_config", git.DirectoryPath())
+	ba := utils.ReadFileToByteArray(configPath)
 
 	var config Config
 	utils.CheckError(json.Unmarshal(ba, &config))

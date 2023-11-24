@@ -43,8 +43,8 @@ func convertHeadToStack(ref string) string {
 
 func getStacks() []*StackNode {
 	var existingStacks []*StackNode
-	// TODO: get .git directory dynamically to avoid hardcoding
-	err := filepath.Walk(".git/refs/stacks", func(path string, info os.FileInfo, err error) error {
+	stacksPath := fmt.Sprintf("%s/refs/stacks", git.DirectoryPath())
+	err := filepath.Walk(stacksPath, func(path string, info os.FileInfo, err error) error {
 		utils.CheckError(err)
 
 		if info.IsDir() {
@@ -98,8 +98,7 @@ func CreateStack(name string, parentBranch string, parentRefSha string) {
 
 func StackExists(ref string) bool {
 	name := GetNameFromRef(ref)
-	// TODO: get .git directory dynamically to avoid hardcoding
-	return utils.FileExists(fmt.Sprintf(".git/refs/stacks/%s", name))
+	return utils.FileExists(fmt.Sprintf("%s/refs/stacks/%s", git.DirectoryPath(), name))
 }
 
 func GetCurrentStackNode() *StackNode {

@@ -130,3 +130,10 @@ func ForcePushBranch(branch string) {
 	_, err := exec.Command("git", "push", "-f", "-u", "origin", branch).Output()
 	utils.CheckError(err)
 }
+
+func DirectoryPath() string {
+	out, err := exec.Command("git", "rev-parse", "--show-toplevel").Output()
+	utils.CheckError(err)
+
+	return fmt.Sprintf("%s/.git", strings.TrimSpace(string(out)))
+}
