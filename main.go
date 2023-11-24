@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/underwoo16/git-stacks/commands"
-	"github.com/underwoo16/git-stacks/git"
 )
 
 func main() {
@@ -33,10 +32,6 @@ func main() {
 		commands.Pr(args[1:])
 	case "push-stack":
 		commands.Push(args[1:])
-	case "write":
-		commands.Write(args[1:])
-	case "test":
-		fmt.Println(git.DirectoryPath())
 	default:
 		commands.PassThrough(args)
 	}

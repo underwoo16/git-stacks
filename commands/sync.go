@@ -12,7 +12,6 @@ import (
 
 // TODO: use rerere
 func Sync() {
-	// TODO: Handle merge failure (e.g. conflicts) and continue
 	fmt.Printf("Syncing stacks...\n")
 	currentBranch := git.GetCurrentBranch()
 	trunk := stacks.GetGraph()

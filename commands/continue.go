@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/underwoo16/git-stacks/git"
 	"github.com/underwoo16/git-stacks/queue"
@@ -9,7 +10,10 @@ import (
 )
 
 func Continue() {
-	// TODO: check if continue info exists
+	if !stacks.ContinueInfoExists() {
+		log.Fatal("No continue info found")
+	}
+
 	fmt.Println("Continuing sync...")
 	continueInfo := stacks.GetContinueInfo()
 
@@ -51,8 +55,7 @@ func Continue() {
 	fmt.Println("Sync complete")
 	stacks.CacheGraphToDisk(trunk)
 
-	// TODO: Remove continue file
-	// TODO: switch back to original branch
+	stacks.RemoveContinueInfo()
 }
 
 func populateMap(stack *stacks.StackNode, stackMap map[string]*stacks.StackNode) {

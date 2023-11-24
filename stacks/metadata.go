@@ -99,13 +99,25 @@ func StoreContinueInfo(branch string, queue *queue.Queue) {
 	b, err := json.Marshal(continueInfo)
 	utils.CheckError(err)
 
-	utils.WriteByteArrayToFile(b, ".git/.stacks_continue")
+	continePath := fmt.Sprintf("%s/.stacks_continue", git.DirectoryPath())
+	utils.WriteByteArrayToFile(b, continePath)
+}
+
+func ContinueInfoExists() bool {
+	continePath := fmt.Sprintf("%s/.stacks_continue", git.DirectoryPath())
+	return utils.FileExists(continePath)
 }
 
 func GetContinueInfo() ContinueInfo {
-	ba := utils.ReadFileToByteArray(".git/.stacks_continue")
+	continePath := fmt.Sprintf("%s/.stacks_continue", git.DirectoryPath())
+	ba := utils.ReadFileToByteArray(continePath)
 	var continueInfo ContinueInfo
 	utils.CheckError(json.Unmarshal(ba, &continueInfo))
 
 	return continueInfo
+}
+
+func RemoveContinueInfo() {
+	continePath := fmt.Sprintf("%s/.stacks_continue", git.DirectoryPath())
+	utils.RemoveFile(continePath)
 }
