@@ -61,7 +61,8 @@ func GetConfig() Config {
 }
 
 func CacheExists() bool {
-	return utils.FileExists(".git/.stacks_cache")
+	cachePath := fmt.Sprintf("%s/.stacks_cache", git.DirectoryPath())
+	return utils.FileExists(cachePath)
 }
 
 func GetCache() Cache {

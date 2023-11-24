@@ -1,6 +1,8 @@
 package stacks
 
-import "github.com/underwoo16/git-stacks/git"
+import (
+	"github.com/underwoo16/git-stacks/git"
+)
 
 func GetGraph() *StackNode {
 	if CacheExists() {

@@ -51,8 +51,8 @@ func getStacks() []*StackNode {
 			return nil
 		}
 
-		// TODO: this seems brittle
-		ref := path[5:]
+		index := strings.Index(path, "refs/stacks/")
+		ref := path[index:]
 		stack := readStack(ref)
 		existingStacks = append(existingStacks, stack)
 
