@@ -64,7 +64,7 @@ func getStacks() []*StackNode {
 }
 
 func UpdateStack(stack *StackNode) {
-	tempFilePath := fmt.Sprintf(".git/temp-%s", stack.Name)
+	tempFilePath := fmt.Sprintf("%s/temp-%s", git.DirectoryPath(), stack.Name)
 
 	hashObject := fmt.Sprintf("%s\n%s", stack.ParentBranch, stack.ParentRefSha)
 	utils.WriteToFile(tempFilePath, hashObject)
@@ -75,11 +75,11 @@ func UpdateStack(stack *StackNode) {
 	newRef := fmt.Sprintf("refs/stacks/%s", stack.Name)
 	git.UpdateRef(newRef, objectSha)
 
-	// TODO: cachegraph to disk
+	CacheGraphToDisk(stack)
 }
 
 func CreateStack(name string, parentBranch string, parentRefSha string) {
-	tempFilePath := fmt.Sprintf(".git/temp-%s", name)
+	tempFilePath := fmt.Sprintf("%s/temp-%s", git.DirectoryPath(), name)
 
 	hashObject := fmt.Sprintf("%s\n%s", parentBranch, parentRefSha)
 	utils.WriteToFile(tempFilePath, hashObject)
@@ -89,11 +89,18 @@ func CreateStack(name string, parentBranch string, parentRefSha string) {
 
 	newRef := fmt.Sprintf("refs/stacks/%s", name)
 	git.UpdateRef(newRef, objectSha)
-	git.CreateAndCheckoutBranch(name)
 
-	// TODO:
-	// Update stack graph
-	// Update cache from stack graph
+	currentStack := GetCurrentStackNode()
+	currentStack.Children = append(currentStack.Children, &StackNode{
+		Name:         name,
+		ParentBranch: parentBranch,
+		ParentRefSha: parentRefSha,
+		Children:     []*StackNode{},
+	})
+
+	CacheGraphToDisk(currentStack)
+
+	git.CreateAndCheckoutBranch(name)
 }
 
 func StackExists(ref string) bool {
