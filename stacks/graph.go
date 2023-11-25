@@ -1,37 +1,30 @@
 package stacks
 
-import (
-	"github.com/underwoo16/git-stacks/git"
-)
-
-func GetGraph() *StackNode {
-	metadataService := MetadataService{gitService: git.NewGitService()}
-	if metadataService.CacheExists() {
-		return GetGraphFromCache()
+func (s *StackService) GetGraph() *StackNode {
+	if s.metadataService.CacheExists() {
+		return s.GetGraphFromCache()
 	}
 
-	graph := GetGraphFromRefs()
-	CacheGraphToDisk(graph)
+	graph := s.GetGraphFromRefs()
+	s.CacheGraphToDisk(graph)
 	return graph
 }
 
-func GetGraphFromRefs() *StackNode {
-	metadataService := MetadataService{gitService: git.NewGitService()}
-	config := metadataService.GetConfig()
+func (s *StackService) GetGraphFromRefs() *StackNode {
+	config := s.metadataService.GetConfig()
 
-	gitService := git.NewGitService()
 	trunk := StackNode{
 		Name:     config.Trunk,
-		RefSha:   gitService.RevParse(config.Trunk),
+		RefSha:   s.gitService.RevParse(config.Trunk),
 		Children: []*StackNode{},
 	}
 
-	allStacks := getStacks()
+	allStacks := s.getStacks()
 	allStacks = append(allStacks, &trunk)
-	return BuildGraphIterative(&trunk, allStacks)
+	return s.BuildGraphIterative(&trunk, allStacks)
 }
 
-func BuildGraphIterative(trunk *StackNode, allStacks []*StackNode) *StackNode {
+func (s *StackService) BuildGraphIterative(trunk *StackNode, allStacks []*StackNode) *StackNode {
 	stackMap := make(map[string]*StackNode)
 	for _, stack := range allStacks {
 		stackMap[stack.Name] = stack
@@ -48,9 +41,8 @@ func BuildGraphIterative(trunk *StackNode, allStacks []*StackNode) *StackNode {
 	return trunk
 }
 
-func GetGraphFromCache() *StackNode {
-	metadataService := MetadataService{gitService: git.NewGitService()}
-	branches := metadataService.GetCache().Branches
+func (s *StackService) GetGraphFromCache() *StackNode {
+	branches := s.metadataService.GetCache().Branches
 	stackMap := make(map[string]*StackNode)
 
 	for _, branch := range branches {
@@ -76,26 +68,25 @@ func GetGraphFromCache() *StackNode {
 		}
 	}
 
-	trunkName := metadataService.GetConfig().Trunk
+	trunkName := s.metadataService.GetConfig().Trunk
 	trunk := stackMap[trunkName]
 
 	return trunk
 }
 
-func CacheGraphToDisk(trunk *StackNode) {
-	trunk = FindTrunk(trunk)
+func (s *StackService) CacheGraphToDisk(trunk *StackNode) {
+	trunk = s.FindTrunk(trunk)
 	branches := bfs(trunk, []Branch{})
 
-	metadataService := MetadataService{gitService: git.NewGitService()}
-	metadataService.UpdateCache(Cache{Branches: branches})
+	s.metadataService.UpdateCache(Cache{Branches: branches})
 }
 
-func FindTrunk(node *StackNode) *StackNode {
+func (s *StackService) FindTrunk(node *StackNode) *StackNode {
 	if node.Parent == nil {
 		return node
 	}
 
-	return FindTrunk(node.Parent)
+	return s.FindTrunk(node.Parent)
 }
 
 func bfs(node *StackNode, arr []Branch) []Branch {

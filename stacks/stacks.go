@@ -19,34 +19,40 @@ type StackNode struct {
 	ParentRefSha string
 }
 
-func readStack(ref string) *StackNode {
-	gitService := git.NewGitService()
+type StackService struct {
+	gitService      *git.GitService
+	metadataService *MetadataService
+}
 
-	out := gitService.Show(ref)
+func NewStackService(gitService *git.GitService, metadataService *MetadataService) *StackService {
+	return &StackService{gitService: gitService, metadataService: metadataService}
+}
+
+func (s *StackService) readStack(ref string) *StackNode {
+	out := s.gitService.Show(ref)
 	items := strings.Fields(out)
-	name := GetNameFromRef(ref)
+	name := s.GetNameFromRef(ref)
 	return &StackNode{
 		Name:         name,
-		RefSha:       gitService.RevParse(name),
-		ParentBranch: GetNameFromRef(items[0]),
+		RefSha:       s.gitService.RevParse(name),
+		ParentBranch: s.GetNameFromRef(items[0]),
 		ParentRefSha: items[1],
 		Children:     []*StackNode{},
 	}
 }
 
-func GetNameFromRef(ref string) string {
+func (s *StackService) GetNameFromRef(ref string) string {
 	ref = strings.Replace(ref, "refs/heads/", "", -1)
 	return strings.Replace(ref, "refs/stacks/", "", -1)
 }
 
-func convertHeadToStack(ref string) string {
+func (s *StackService) convertHeadToStack(ref string) string {
 	return strings.Replace(ref, "refs/heads", "refs/stacks", -1)
 }
 
-func getStacks() []*StackNode {
-	gitService := git.NewGitService()
+func (s *StackService) getStacks() []*StackNode {
 	var existingStacks []*StackNode
-	stacksPath := fmt.Sprintf("%s/refs/stacks", gitService.DirectoryPath())
+	stacksPath := fmt.Sprintf("%s/refs/stacks", s.gitService.DirectoryPath())
 	err := filepath.Walk(stacksPath, func(path string, info os.FileInfo, err error) error {
 		utils.CheckError(err)
 
@@ -56,7 +62,7 @@ func getStacks() []*StackNode {
 
 		index := strings.Index(path, "refs/stacks/")
 		ref := path[index:]
-		stack := readStack(ref)
+		stack := s.readStack(ref)
 		existingStacks = append(existingStacks, stack)
 
 		return nil
@@ -66,36 +72,34 @@ func getStacks() []*StackNode {
 	return existingStacks
 }
 
-func UpdateStack(stack *StackNode) {
-	gitService := git.NewGitService()
-	tempFilePath := fmt.Sprintf("%s/temp-%s", gitService.DirectoryPath(), stack.Name)
+func (s *StackService) UpdateStack(stack *StackNode) {
+	tempFilePath := fmt.Sprintf("%s/temp-%s", s.gitService.DirectoryPath(), stack.Name)
 
 	hashObject := fmt.Sprintf("%s\n%s", stack.ParentBranch, stack.ParentRefSha)
 	utils.WriteToFile(tempFilePath, hashObject)
 
-	objectSha := gitService.CreateHashObject(tempFilePath)
+	objectSha := s.gitService.CreateHashObject(tempFilePath)
 	utils.RemoveFile(tempFilePath)
 
 	newRef := fmt.Sprintf("refs/stacks/%s", stack.Name)
-	gitService.UpdateRef(newRef, objectSha)
+	s.gitService.UpdateRef(newRef, objectSha)
 
-	CacheGraphToDisk(stack)
+	s.CacheGraphToDisk(stack)
 }
 
-func CreateStack(name string, parentBranch string, parentRefSha string) {
-	gitService := git.NewGitService()
-	tempFilePath := fmt.Sprintf("%s/temp-%s", gitService.DirectoryPath(), name)
+func (s *StackService) CreateStack(name string, parentBranch string, parentRefSha string) {
+	tempFilePath := fmt.Sprintf("%s/temp-%s", s.gitService.DirectoryPath(), name)
 
 	hashObject := fmt.Sprintf("%s\n%s", parentBranch, parentRefSha)
 	utils.WriteToFile(tempFilePath, hashObject)
 
-	objectSha := gitService.CreateHashObject(tempFilePath)
+	objectSha := s.gitService.CreateHashObject(tempFilePath)
 	utils.RemoveFile(tempFilePath)
 
 	newRef := fmt.Sprintf("refs/stacks/%s", name)
-	gitService.UpdateRef(newRef, objectSha)
+	s.gitService.UpdateRef(newRef, objectSha)
 
-	currentStack := GetCurrentStackNode()
+	currentStack := s.GetCurrentStackNode()
 	currentStack.Children = append(currentStack.Children, &StackNode{
 		Name:         name,
 		ParentBranch: parentBranch,
@@ -103,32 +107,30 @@ func CreateStack(name string, parentBranch string, parentRefSha string) {
 		Children:     []*StackNode{},
 	})
 
-	CacheGraphToDisk(currentStack)
+	s.CacheGraphToDisk(currentStack)
 
-	gitService.CreateAndCheckoutBranch(name)
+	s.gitService.CreateAndCheckoutBranch(name)
 }
 
-func StackExists(ref string) bool {
-	gitService := git.NewGitService()
-	name := GetNameFromRef(ref)
-	return utils.FileExists(fmt.Sprintf("%s/refs/stacks/%s", gitService.DirectoryPath(), name))
+func (s *StackService) StackExists(ref string) bool {
+	name := s.GetNameFromRef(ref)
+	return utils.FileExists(fmt.Sprintf("%s/refs/stacks/%s", s.gitService.DirectoryPath(), name))
 }
 
-func GetCurrentStackNode() *StackNode {
-	gitService := git.NewGitService()
-	currentBranch := gitService.GetCurrentBranch()
+func (s *StackService) GetCurrentStackNode() *StackNode {
+	currentBranch := s.gitService.GetCurrentBranch()
 
-	trunk := GetGraph()
-	return findStack(trunk, currentBranch)
+	trunk := s.GetGraph()
+	return s.findStack(trunk, currentBranch)
 }
 
-func findStack(node *StackNode, branch string) *StackNode {
+func (s *StackService) findStack(node *StackNode, branch string) *StackNode {
 	if node.Name == branch {
 		return node
 	}
 
 	for _, child := range node.Children {
-		if found := findStack(child, branch); found != nil {
+		if found := s.findStack(child, branch); found != nil {
 			return found
 		}
 	}
@@ -136,12 +138,11 @@ func findStack(node *StackNode, branch string) *StackNode {
 	return nil
 }
 
-func NeedsSync(stack *StackNode) bool {
+func (s *StackService) NeedsSync(stack *StackNode) bool {
 	if stack.Parent == nil {
 		return false
 	}
 
-	gitService := git.NewGitService()
-	actualParentSha := gitService.RevParse(stack.ParentBranch)
+	actualParentSha := s.gitService.RevParse(stack.ParentBranch)
 	return stack.ParentRefSha != actualParentSha
 }

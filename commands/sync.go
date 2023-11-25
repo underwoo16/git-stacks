@@ -10,19 +10,24 @@ import (
 	"github.com/underwoo16/git-stacks/stacks"
 )
 
-// TODO: use rerere
-func Sync() {
-	fmt.Printf("Syncing stacks...\n")
-
-	gitService := git.NewGitService()
-	currentBranch := gitService.GetCurrentBranch()
-	trunk := stacks.GetGraph()
-	Resync(trunk)
-	stacks.CacheGraphToDisk(trunk)
-	gitService.CheckoutBranch(currentBranch)
+type SyncCommand struct {
+	MetadataService *stacks.MetadataService
+	StackService    *stacks.StackService
+	GitService      *git.GitService
 }
 
-func Resync(trunk *stacks.StackNode) {
+func (sc *SyncCommand) Run() {
+	fmt.Printf("Syncing stacks...\n")
+
+	currentBranch := sc.GitService.GetCurrentBranch()
+	trunk := sc.StackService.GetGraph()
+	sc.Resync(trunk)
+	sc.StackService.CacheGraphToDisk(trunk)
+	sc.GitService.CheckoutBranch(currentBranch)
+}
+
+// TODO: move this method into StackService
+func (sc *SyncCommand) Resync(trunk *stacks.StackNode) {
 	syncQueue := queue.New()
 	syncQueue.Push(trunk)
 
@@ -32,32 +37,30 @@ func Resync(trunk *stacks.StackNode) {
 			syncQueue.Push(child)
 		}
 
-		SyncStack(stack, syncQueue)
+		sc.SyncStack(stack, syncQueue)
 	}
 }
 
-func SyncStack(stack *stacks.StackNode, syncQueue *queue.Queue) {
-	if !stacks.NeedsSync(stack) {
+// TODO: move this method into StackService
+func (sc *SyncCommand) SyncStack(stack *stacks.StackNode, syncQueue *queue.Queue) {
+	if !sc.StackService.NeedsSync(stack) {
 		return
 	}
 
 	fmt.Printf("Rebasing %s onto %s\n", colors.CurrentStack(stack.Name), colors.OtherStack(stack.ParentBranch))
 
-	gitService := git.NewGitService()
-	err := gitService.Rebase(stack.ParentBranch, stack.Name)
+	err := sc.GitService.Rebase(stack.ParentBranch, stack.Name)
 	if err != nil {
 		fmt.Printf("'%s' rebase failed\n", stack.Name)
 		fmt.Printf("Resolve conflicts and run %s\n", colors.Yellow("git-stacks continue"))
 		fmt.Printf("Alternatively, run %s to abort the rebase\n", colors.Yellow("git-stacks rebase --abort"))
 
-		metadataService := stacks.NewMetadataService(gitService)
-		metadataService.StoreContinueInfo(stack.Name, syncQueue)
+		sc.MetadataService.StoreContinueInfo(stack.Name, syncQueue)
 		os.Exit(1)
 	}
 
-	// TODO: don't create new git service - use class reference once this is a class
-	newParentSha := gitService.RevParse(stack.ParentBranch)
-	newSha := gitService.RevParse(stack.Name)
+	newParentSha := sc.GitService.RevParse(stack.ParentBranch)
+	newSha := sc.GitService.RevParse(stack.Name)
 	stack.RefSha = newSha
 	stack.ParentRefSha = newParentSha
 }

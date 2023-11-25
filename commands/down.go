@@ -8,12 +8,16 @@ import (
 	"github.com/underwoo16/git-stacks/stacks"
 )
 
-func Down() {
-	currentNode := stacks.GetCurrentStackNode()
+type DownCommand struct {
+	GitService   *git.GitService
+	StackService *stacks.StackService
+}
 
-	gitService := git.NewGitService()
+func (dc *DownCommand) Run() {
+	currentNode := dc.StackService.GetCurrentStackNode()
+
 	if currentNode == nil || currentNode.Parent == nil {
-		fmt.Printf("%s\n", colors.CurrentStack(gitService.GetCurrentBranch()))
+		fmt.Printf("%s\n", colors.CurrentStack(dc.GitService.GetCurrentBranch()))
 		fmt.Printf("Already at bottom of stack.\n")
 		return
 	}
@@ -22,6 +26,6 @@ func Down() {
 
 	fmt.Printf("%s <- %s\n", parentBranch, colors.OtherStack(currentNode.Name))
 
-	gitService.CheckoutBranch(parentBranch)
+	dc.GitService.CheckoutBranch(parentBranch)
 	fmt.Printf("Switched to %s.\n", colors.CurrentStack(parentBranch))
 }

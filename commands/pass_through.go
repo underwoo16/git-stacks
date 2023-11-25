@@ -4,7 +4,10 @@ import (
 	"github.com/underwoo16/git-stacks/git"
 )
 
-func PassThrough(args []string) {
-	gitService := git.NewGitService()
-	gitService.PassThrough(args)
+type PassThroughCommand struct {
+	GitService *git.GitService
+}
+
+func (p *PassThroughCommand) Run(args []string) {
+	p.GitService.PassThrough(args)
 }

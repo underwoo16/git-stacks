@@ -11,8 +11,13 @@ import (
 	"github.com/underwoo16/git-stacks/stacks"
 )
 
-func Up() {
-	currentNode := stacks.GetCurrentStackNode()
+type UpCommand struct {
+	GitService   *git.GitService
+	StackService *stacks.StackService
+}
+
+func (uc *UpCommand) Run() {
+	currentNode := uc.StackService.GetCurrentStackNode()
 	if currentNode == nil {
 		log.Fatal("Not on a known stack.")
 	}
@@ -24,7 +29,7 @@ func Up() {
 	}
 
 	if len(children) == 1 {
-		switchToFrom(children[0].Name, currentNode.Name)
+		uc.switchToFrom(children[0].Name, currentNode.Name)
 		return
 	}
 
@@ -34,14 +39,13 @@ func Up() {
 	}
 
 	r := prompts.PromptUser(branches, "Select child branch", branchPromptTemplate())
-	switchToFrom(r, currentNode.Name)
+	uc.switchToFrom(r, currentNode.Name)
 }
 
-func switchToFrom(to string, from string) {
+func (uc *UpCommand) switchToFrom(to string, from string) {
 	fmt.Printf("%s -> %s\n", colors.OtherStack(from), to)
 
-	gitService := git.NewGitService()
-	gitService.CheckoutBranch(to)
+	uc.GitService.CheckoutBranch(to)
 	fmt.Printf("Switched to %s.\n", colors.CurrentStack(to))
 }
 

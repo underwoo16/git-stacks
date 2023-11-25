@@ -45,24 +45,22 @@ func (m *MetadataService) ConfigExists() bool {
 }
 
 func (m *MetadataService) UpdateConfig(config Config) {
-	gitService := git.NewGitService()
 	b, err := json.Marshal(config)
 	utils.CheckError(err)
 
-	configPath := fmt.Sprintf("%s/.stacks_config", gitService.DirectoryPath())
+	configPath := fmt.Sprintf("%s/.stacks_config", m.gitService.DirectoryPath())
 	utils.WriteByteArrayToFile(b, configPath)
 }
 
 func (m *MetadataService) GetConfig() Config {
-	gitService := git.NewGitService()
 	if !m.ConfigExists() {
-		currentBranch := gitService.GetCurrentBranch()
+		currentBranch := m.gitService.GetCurrentBranch()
 		config := Config{Trunk: currentBranch}
 		m.UpdateConfig(config)
 		return config
 	}
 
-	configPath := fmt.Sprintf("%s/.stacks_config", gitService.DirectoryPath())
+	configPath := fmt.Sprintf("%s/.stacks_config", m.gitService.DirectoryPath())
 	ba := utils.ReadFileToByteArray(configPath)
 
 	var config Config
@@ -72,8 +70,7 @@ func (m *MetadataService) GetConfig() Config {
 }
 
 func (m *MetadataService) CacheExists() bool {
-	gitService := git.NewGitService()
-	cachePath := fmt.Sprintf("%s/.stacks_cache", gitService.DirectoryPath())
+	cachePath := fmt.Sprintf("%s/.stacks_cache", m.gitService.DirectoryPath())
 	return utils.FileExists(cachePath)
 }
 
@@ -113,20 +110,17 @@ func (m *MetadataService) StoreContinueInfo(branch string, queue *queue.Queue) {
 	b, err := json.Marshal(continueInfo)
 	utils.CheckError(err)
 
-	gitService := git.NewGitService()
-	continePath := fmt.Sprintf("%s/.stacks_continue", gitService.DirectoryPath())
+	continePath := fmt.Sprintf("%s/.stacks_continue", m.gitService.DirectoryPath())
 	utils.WriteByteArrayToFile(b, continePath)
 }
 
 func (m *MetadataService) ContinueInfoExists() bool {
-	gitService := git.NewGitService()
-	continePath := fmt.Sprintf("%s/.stacks_continue", gitService.DirectoryPath())
+	continePath := fmt.Sprintf("%s/.stacks_continue", m.gitService.DirectoryPath())
 	return utils.FileExists(continePath)
 }
 
 func (m *MetadataService) GetContinueInfo() ContinueInfo {
-	gitService := git.NewGitService()
-	continePath := fmt.Sprintf("%s/.stacks_continue", gitService.DirectoryPath())
+	continePath := fmt.Sprintf("%s/.stacks_continue", m.gitService.DirectoryPath())
 	ba := utils.ReadFileToByteArray(continePath)
 	var continueInfo ContinueInfo
 	utils.CheckError(json.Unmarshal(ba, &continueInfo))
@@ -135,7 +129,6 @@ func (m *MetadataService) GetContinueInfo() ContinueInfo {
 }
 
 func (m *MetadataService) RemoveContinueInfo() {
-	gitService := git.NewGitService()
-	continePath := fmt.Sprintf("%s/.stacks_continue", gitService.DirectoryPath())
+	continePath := fmt.Sprintf("%s/.stacks_continue", m.gitService.DirectoryPath())
 	utils.RemoveFile(continePath)
 }
