@@ -16,9 +16,15 @@ type PullRequest struct {
 	Url         string `json:"url"`
 }
 
+type GitHubService struct{}
+
 // TODO: Add func to test if gh is installed
 
-func GetPullRequests() []PullRequest {
+func NewGitHubService() *GitHubService {
+	return &GitHubService{}
+}
+
+func (gh *GitHubService) GetPullRequests() []PullRequest {
 	out, err := exec.Command("gh", "pr", "list", "--author", "@me", "--json", "number,baseRefName,headRefName,url").Output()
 	utils.CheckError(err)
 
@@ -29,7 +35,7 @@ func GetPullRequests() []PullRequest {
 }
 
 // TODO: Default title, body, and submit
-func CreatePullRequest(baseBranch string, headBranch string) {
+func (gh *GitHubService) CreatePullRequest(baseBranch string, headBranch string) {
 	cmd := exec.Command("gh", "pr", "create", "-B", baseBranch, "-H", headBranch)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

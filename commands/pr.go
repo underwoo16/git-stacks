@@ -11,8 +11,10 @@ import (
 
 func Pr(args []string) {
 	gitService := git.NewGitService()
+	gitHubService := git.NewGitHubService()
+
+	pullRequests := gitHubService.GetPullRequests()
 	currentStack := stacks.GetCurrentStackNode()
-	pullRequests := git.GetPullRequests()
 	if len(args) < 1 {
 		gitService.Rebase(currentStack.ParentBranch, currentStack.Name)
 		submitPullRequestForStack(currentStack, pullRequests)
@@ -71,7 +73,8 @@ func submitPullRequestForStack(stack *stacks.StackNode, pullRequests []git.PullR
 	gitService := git.NewGitService()
 	gitService.ForcePushBranch(stack.Name)
 
-	git.CreatePullRequest(parent.Name, stack.Name)
+	gitHubService := git.NewGitHubService()
+	gitHubService.CreatePullRequest(parent.Name, stack.Name)
 }
 
 func pullRequestFor(head string, base string, pulls []git.PullRequest) *git.PullRequest {
