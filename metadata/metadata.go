@@ -45,16 +45,17 @@ type MetadataService interface {
 }
 
 type metadataService struct {
-	gitService git.GitService
+	gitService  git.GitService
+	fileService utils.FileService
 }
 
-func NewMetadataService(gitService git.GitService) *metadataService {
-	return &metadataService{gitService: gitService}
+func NewMetadataService(gitService git.GitService, fileService utils.FileService) *metadataService {
+	return &metadataService{gitService: gitService, fileService: fileService}
 }
 
 func (m *metadataService) ConfigExists() bool {
 	gitPath := fmt.Sprintf("%s/.stacks_config", m.gitService.DirectoryPath())
-	return utils.FileExists(gitPath)
+	return m.fileService.FileExists(gitPath)
 }
 
 func (m *metadataService) UpdateConfig(config Config) {
@@ -65,7 +66,7 @@ func (m *metadataService) UpdateConfig(config Config) {
 	}
 
 	configPath := fmt.Sprintf("%s/.stacks_config", m.gitService.DirectoryPath())
-	utils.WriteByteArrayToFile(b, configPath)
+	m.fileService.WriteByteArrayToFile(b, configPath)
 }
 
 func (m *metadataService) GetConfig() Config {
@@ -77,7 +78,7 @@ func (m *metadataService) GetConfig() Config {
 	}
 
 	configPath := fmt.Sprintf("%s/.stacks_config", m.gitService.DirectoryPath())
-	ba := utils.ReadFileToByteArray(configPath)
+	ba := m.fileService.ReadFileToByteArray(configPath)
 
 	var config Config
 	err := json.Unmarshal(ba, &config)
@@ -91,7 +92,7 @@ func (m *metadataService) GetConfig() Config {
 
 func (m *metadataService) CacheExists() bool {
 	cachePath := fmt.Sprintf("%s/.stacks_cache", m.gitService.DirectoryPath())
-	return utils.FileExists(cachePath)
+	return m.fileService.FileExists(cachePath)
 }
 
 func (m *metadataService) GetCache() Cache {
@@ -104,7 +105,7 @@ func (m *metadataService) GetCache() Cache {
 	}
 
 	cachePath := fmt.Sprintf("%s/.stacks_cache", m.gitService.DirectoryPath())
-	ba := utils.ReadFileToByteArray(cachePath)
+	ba := m.fileService.ReadFileToByteArray(cachePath)
 	var cache Cache
 	err := json.Unmarshal(ba, &cache)
 	if err != nil {
@@ -123,7 +124,7 @@ func (m *metadataService) UpdateCache(cache Cache) {
 	}
 
 	cachePath := fmt.Sprintf("%s/.stacks_cache", m.gitService.DirectoryPath())
-	utils.WriteByteArrayToFile(b, cachePath)
+	m.fileService.WriteByteArrayToFile(b, cachePath)
 }
 
 func (m *metadataService) StoreContinueInfo(branch string, branches []string) {
@@ -135,17 +136,17 @@ func (m *metadataService) StoreContinueInfo(branch string, branches []string) {
 	}
 
 	continePath := fmt.Sprintf("%s/.stacks_continue", m.gitService.DirectoryPath())
-	utils.WriteByteArrayToFile(b, continePath)
+	m.fileService.WriteByteArrayToFile(b, continePath)
 }
 
 func (m *metadataService) ContinueInfoExists() bool {
 	continePath := fmt.Sprintf("%s/.stacks_continue", m.gitService.DirectoryPath())
-	return utils.FileExists(continePath)
+	return m.fileService.FileExists(continePath)
 }
 
 func (m *metadataService) GetContinueInfo() ContinueInfo {
 	continePath := fmt.Sprintf("%s/.stacks_continue", m.gitService.DirectoryPath())
-	ba := utils.ReadFileToByteArray(continePath)
+	ba := m.fileService.ReadFileToByteArray(continePath)
 	var continueInfo ContinueInfo
 	err := json.Unmarshal(ba, &continueInfo)
 	if err != nil {
@@ -158,5 +159,5 @@ func (m *metadataService) GetContinueInfo() ContinueInfo {
 
 func (m *metadataService) RemoveContinueInfo() {
 	continePath := fmt.Sprintf("%s/.stacks_continue", m.gitService.DirectoryPath())
-	utils.RemoveFile(continePath)
+	m.fileService.RemoveFile(continePath)
 }

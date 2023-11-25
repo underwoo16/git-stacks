@@ -31,10 +31,11 @@ type StackService interface {
 type stackService struct {
 	gitService      git.GitService
 	metadataService metadata.MetadataService
+	fileService     utils.FileService
 }
 
-func NewStackService(gitService git.GitService, metadataService metadata.MetadataService) *stackService {
-	return &stackService{gitService: gitService, metadataService: metadataService}
+func NewStackService(gitService git.GitService, metadataService metadata.MetadataService, fileService utils.FileService) *stackService {
+	return &stackService{gitService: gitService, metadataService: metadataService, fileService: fileService}
 }
 
 func (s *stackService) readStack(ref string) *StackNode {
@@ -91,10 +92,10 @@ func (s *stackService) UpdateStack(stack *StackNode) {
 	tempFilePath := fmt.Sprintf("%s/temp-%s", s.gitService.DirectoryPath(), stack.Name)
 
 	hashObject := fmt.Sprintf("%s\n%s", stack.ParentBranch, stack.ParentRefSha)
-	utils.WriteToFile(tempFilePath, hashObject)
+	s.fileService.WriteToFile(tempFilePath, hashObject)
 
 	objectSha := s.gitService.CreateHashObject(tempFilePath)
-	utils.RemoveFile(tempFilePath)
+	s.fileService.RemoveFile(tempFilePath)
 
 	newRef := fmt.Sprintf("refs/stacks/%s", stack.Name)
 	s.gitService.UpdateRef(newRef, objectSha)
@@ -106,10 +107,10 @@ func (s *stackService) CreateStack(name string, parentBranch string, parentRefSh
 	tempFilePath := fmt.Sprintf("%s/temp-%s", s.gitService.DirectoryPath(), name)
 
 	hashObject := fmt.Sprintf("%s\n%s", parentBranch, parentRefSha)
-	utils.WriteToFile(tempFilePath, hashObject)
+	s.fileService.WriteToFile(tempFilePath, hashObject)
 
 	objectSha := s.gitService.CreateHashObject(tempFilePath)
-	utils.RemoveFile(tempFilePath)
+	s.fileService.RemoveFile(tempFilePath)
 
 	newRef := fmt.Sprintf("refs/stacks/%s", name)
 	s.gitService.UpdateRef(newRef, objectSha)
@@ -129,7 +130,7 @@ func (s *stackService) CreateStack(name string, parentBranch string, parentRefSh
 
 func (s *stackService) StackExists(ref string) bool {
 	name := s.GetNameFromRef(ref)
-	return utils.FileExists(fmt.Sprintf("%s/refs/stacks/%s", s.gitService.DirectoryPath(), name))
+	return s.fileService.FileExists(fmt.Sprintf("%s/refs/stacks/%s", s.gitService.DirectoryPath(), name))
 }
 
 func (s *stackService) GetCurrentStackNode() *StackNode {

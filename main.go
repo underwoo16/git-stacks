@@ -8,6 +8,7 @@ import (
 	"github.com/underwoo16/git-stacks/git"
 	"github.com/underwoo16/git-stacks/metadata"
 	"github.com/underwoo16/git-stacks/stacks"
+	"github.com/underwoo16/git-stacks/utils"
 )
 
 func main() {
@@ -18,10 +19,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	fileService := utils.NewFileService()
 	gitService := git.NewGitService()
 	gitHubService := git.NewGitHubService()
-	metadataService := metadata.NewMetadataService(gitService)
-	stackService := stacks.NewStackService(gitService, metadataService)
+	metadataService := metadata.NewMetadataService(gitService, fileService)
+	stackService := stacks.NewStackService(gitService, metadataService, fileService)
 
 	switch args[0] {
 	case "continue":

@@ -6,7 +6,23 @@ import (
 	"os"
 )
 
-func FileExists(dirPath string) bool {
+type FileService interface {
+	FileExists(dirPath string) bool
+	RemoveFile(dirPath string)
+	CreateFile(dirPath string) *os.File
+	WriteToFile(filePath string, content string)
+	ReadLine(filePath string) string
+	ReadFileToByteArray(filePath string) []byte
+	WriteByteArrayToFile(b []byte, filePath string)
+}
+
+type fileService struct{}
+
+func NewFileService() *fileService {
+	return &fileService{}
+}
+
+func (f *fileService) FileExists(dirPath string) bool {
 	info, err := os.Stat(dirPath)
 	if os.IsNotExist(err) {
 		return false
@@ -14,7 +30,7 @@ func FileExists(dirPath string) bool {
 	return !info.IsDir()
 }
 
-func RemoveFile(dirPath string) {
+func (f *fileService) RemoveFile(dirPath string) {
 	err := os.Remove(dirPath)
 	if err != nil {
 		fmt.Println(err)
@@ -22,7 +38,7 @@ func RemoveFile(dirPath string) {
 	}
 }
 
-func CreateFile(dirPath string) *os.File {
+func (f *fileService) CreateFile(dirPath string) *os.File {
 	file, err := os.Create(dirPath)
 	if err != nil {
 		fmt.Println(err)
@@ -32,10 +48,10 @@ func CreateFile(dirPath string) *os.File {
 	return file
 }
 
-func WriteToFile(filePath string, content string) {
+func (f *fileService) WriteToFile(filePath string, content string) {
 	file, err := os.OpenFile(filePath, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
-		file = CreateFile(filePath)
+		file = f.CreateFile(filePath)
 	}
 
 	defer file.Close()
@@ -47,7 +63,7 @@ func WriteToFile(filePath string, content string) {
 	}
 }
 
-func ReadLine(filePath string) string {
+func (f *fileService) ReadLine(filePath string) string {
 	file, err := os.Open(filePath)
 	if err != nil {
 		fmt.Println(err)
@@ -68,7 +84,7 @@ func ReadLine(filePath string) string {
 	return result
 }
 
-func ReadFileToByteArray(filePath string) []byte {
+func (f *fileService) ReadFileToByteArray(filePath string) []byte {
 	b, err := os.ReadFile(filePath)
 	if err != nil {
 		fmt.Println(err)
@@ -78,7 +94,7 @@ func ReadFileToByteArray(filePath string) []byte {
 	return b
 }
 
-func WriteByteArrayToFile(b []byte, filePath string) {
+func (f *fileService) WriteByteArrayToFile(b []byte, filePath string) {
 	err := os.WriteFile(filePath, b, 0644)
 	if err != nil {
 		fmt.Println(err)
