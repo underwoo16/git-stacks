@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/underwoo16/git-stacks/git"
+	"github.com/underwoo16/git-stacks/metadata"
 	"github.com/underwoo16/git-stacks/utils"
 )
 
@@ -19,33 +20,54 @@ type StackNode struct {
 	ParentRefSha string
 }
 
-func readStack(ref string) *StackNode {
-	out := git.Show(ref)
+type StackService interface {
+	GetGraph() *StackNode
+	CacheGraphToDisk(trunk *StackNode)
+	NeedsSync(stack *StackNode) bool
+	GetCurrentStackNode() *StackNode
+	CreateStack(name string, parent string, parentRefSha string)
+}
+
+type stackService struct {
+	gitService      git.GitService
+	metadataService metadata.MetadataService
+	fileService     utils.FileService
+}
+
+func NewStackService(gitService git.GitService, metadataService metadata.MetadataService, fileService utils.FileService) *stackService {
+	return &stackService{gitService: gitService, metadataService: metadataService, fileService: fileService}
+}
+
+func (s *stackService) readStack(ref string) *StackNode {
+	out := s.gitService.Show(ref)
 	items := strings.Fields(out)
-	name := GetNameFromRef(ref)
+	name := s.GetNameFromRef(ref)
 	return &StackNode{
 		Name:         name,
-		RefSha:       git.RevParse(name),
-		ParentBranch: GetNameFromRef(items[0]),
+		RefSha:       s.gitService.RevParse(name),
+		ParentBranch: s.GetNameFromRef(items[0]),
 		ParentRefSha: items[1],
 		Children:     []*StackNode{},
 	}
 }
 
-func GetNameFromRef(ref string) string {
+func (s *stackService) GetNameFromRef(ref string) string {
 	ref = strings.Replace(ref, "refs/heads/", "", -1)
 	return strings.Replace(ref, "refs/stacks/", "", -1)
 }
 
-func convertHeadToStack(ref string) string {
+func (s *stackService) convertHeadToStack(ref string) string {
 	return strings.Replace(ref, "refs/heads", "refs/stacks", -1)
 }
 
-func getStacks() []*StackNode {
+func (s *stackService) getStacks() []*StackNode {
 	var existingStacks []*StackNode
-	stacksPath := fmt.Sprintf("%s/refs/stacks", git.DirectoryPath())
+	stacksPath := fmt.Sprintf("%s/refs/stacks", s.gitService.DirectoryPath())
 	err := filepath.Walk(stacksPath, func(path string, info os.FileInfo, err error) error {
-		utils.CheckError(err)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 
 		if info.IsDir() {
 			return nil
@@ -53,44 +75,47 @@ func getStacks() []*StackNode {
 
 		index := strings.Index(path, "refs/stacks/")
 		ref := path[index:]
-		stack := readStack(ref)
+		stack := s.readStack(ref)
 		existingStacks = append(existingStacks, stack)
 
 		return nil
 	})
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	return existingStacks
 }
 
-func UpdateStack(stack *StackNode) {
-	tempFilePath := fmt.Sprintf("%s/temp-%s", git.DirectoryPath(), stack.Name)
+func (s *stackService) UpdateStack(stack *StackNode) {
+	tempFilePath := fmt.Sprintf("%s/temp-%s", s.gitService.DirectoryPath(), stack.Name)
 
 	hashObject := fmt.Sprintf("%s\n%s", stack.ParentBranch, stack.ParentRefSha)
-	utils.WriteToFile(tempFilePath, hashObject)
+	s.fileService.WriteToFile(tempFilePath, hashObject)
 
-	objectSha := git.CreateHashObject(tempFilePath)
-	utils.RemoveFile(tempFilePath)
+	objectSha := s.gitService.CreateHashObject(tempFilePath)
+	s.fileService.RemoveFile(tempFilePath)
 
 	newRef := fmt.Sprintf("refs/stacks/%s", stack.Name)
-	git.UpdateRef(newRef, objectSha)
+	s.gitService.UpdateRef(newRef, objectSha)
 
-	CacheGraphToDisk(stack)
+	s.CacheGraphToDisk(stack)
 }
 
-func CreateStack(name string, parentBranch string, parentRefSha string) {
-	tempFilePath := fmt.Sprintf("%s/temp-%s", git.DirectoryPath(), name)
+func (s *stackService) CreateStack(name string, parentBranch string, parentRefSha string) {
+	tempFilePath := fmt.Sprintf("%s/temp-%s", s.gitService.DirectoryPath(), name)
 
 	hashObject := fmt.Sprintf("%s\n%s", parentBranch, parentRefSha)
-	utils.WriteToFile(tempFilePath, hashObject)
+	s.fileService.WriteToFile(tempFilePath, hashObject)
 
-	objectSha := git.CreateHashObject(tempFilePath)
-	utils.RemoveFile(tempFilePath)
+	objectSha := s.gitService.CreateHashObject(tempFilePath)
+	s.fileService.RemoveFile(tempFilePath)
 
 	newRef := fmt.Sprintf("refs/stacks/%s", name)
-	git.UpdateRef(newRef, objectSha)
+	s.gitService.UpdateRef(newRef, objectSha)
 
-	currentStack := GetCurrentStackNode()
+	currentStack := s.GetCurrentStackNode()
 	currentStack.Children = append(currentStack.Children, &StackNode{
 		Name:         name,
 		ParentBranch: parentBranch,
@@ -98,30 +123,30 @@ func CreateStack(name string, parentBranch string, parentRefSha string) {
 		Children:     []*StackNode{},
 	})
 
-	CacheGraphToDisk(currentStack)
+	s.CacheGraphToDisk(currentStack)
 
-	git.CreateAndCheckoutBranch(name)
+	s.gitService.CreateAndCheckoutBranch(name)
 }
 
-func StackExists(ref string) bool {
-	name := GetNameFromRef(ref)
-	return utils.FileExists(fmt.Sprintf("%s/refs/stacks/%s", git.DirectoryPath(), name))
+func (s *stackService) StackExists(ref string) bool {
+	name := s.GetNameFromRef(ref)
+	return s.fileService.FileExists(fmt.Sprintf("%s/refs/stacks/%s", s.gitService.DirectoryPath(), name))
 }
 
-func GetCurrentStackNode() *StackNode {
-	currentBranch := git.GetCurrentRef()
+func (s *stackService) GetCurrentStackNode() *StackNode {
+	currentBranch := s.gitService.GetCurrentBranch()
 
-	trunk := GetGraph()
-	return findStack(trunk, GetNameFromRef(currentBranch))
+	trunk := s.GetGraph()
+	return s.findStack(trunk, currentBranch)
 }
 
-func findStack(node *StackNode, branch string) *StackNode {
+func (s *stackService) findStack(node *StackNode, branch string) *StackNode {
 	if node.Name == branch {
 		return node
 	}
 
 	for _, child := range node.Children {
-		if found := findStack(child, branch); found != nil {
+		if found := s.findStack(child, branch); found != nil {
 			return found
 		}
 	}
@@ -129,11 +154,11 @@ func findStack(node *StackNode, branch string) *StackNode {
 	return nil
 }
 
-func NeedsSync(stack *StackNode) bool {
+func (s *stackService) NeedsSync(stack *StackNode) bool {
 	if stack.Parent == nil {
 		return false
 	}
 
-	actualParentSha := git.RevParse(stack.ParentBranch)
+	actualParentSha := s.gitService.RevParse(stack.ParentBranch)
 	return stack.ParentRefSha != actualParentSha
 }

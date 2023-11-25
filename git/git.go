@@ -7,100 +7,155 @@ import (
 	"strings"
 
 	"github.com/underwoo16/git-stacks/colors"
-	"github.com/underwoo16/git-stacks/utils"
 )
 
-func GetCurrentBranch() string {
+type GitService interface {
+	GetCurrentBranch() string
+	GetCurrentSha() string
+	RevParse(ref string) string
+	CreateHashObject(filepath string) string
+	UpdateRef(ref string, sha string)
+	CreateAndCheckoutBranch(branch string)
+	CheckoutBranch(branch string)
+	Show(thing string) string
+	Rebase(trunk string, branch string) error
+	RebaseContinue()
+	Commit()
+	CommitAmend()
+	BranchExists(branch string) bool
+	PassThrough(args []string)
+	LogBetween(from string, to string) string
+	PushBranch(branch string)
+	ForcePushBranch(branch string)
+	DirectoryPath() string
+}
+
+type gitService struct{}
+
+func NewGitService() *gitService {
+	return &gitService{}
+}
+
+func (g *gitService) GetCurrentBranch() string {
 	out, err := exec.Command("git", "rev-parse", "--abbrev-ref", "HEAD").Output()
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
 	branchName := strings.TrimSpace(string(out))
 	return branchName
 }
 
-func GetCurrentRef() string {
-	out, err := exec.Command("git", "symbolic-ref", "HEAD").Output()
-	utils.CheckError(err)
-	refName := strings.TrimSpace(string(out))
-	return refName
+func (g *gitService) GetCurrentSha() string {
+	return g.RevParse("HEAD")
 }
 
-func GetCurrentSha() string {
-	return RevParse("HEAD")
-}
-
-func RevParse(ref string) string {
+func (g *gitService) RevParse(ref string) string {
 	out, err := exec.Command("git", "rev-parse", ref).Output()
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
 	refSha := strings.TrimSpace(string(out))
 	return refSha
 }
 
-func CreateHashObject(filepath string) string {
+func (g *gitService) CreateHashObject(filepath string) string {
 	out, err := exec.Command("git", "hash-object", "-w", filepath).Output()
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
 	objectSha := strings.TrimSpace(string(out))
 	return objectSha
 }
 
-func UpdateRef(ref string, sha string) {
+func (g *gitService) UpdateRef(ref string, sha string) {
 	_, err := exec.Command("git", "update-ref", ref, sha).Output()
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
 
-func CreateAndCheckoutBranch(branch string) {
+func (g *gitService) CreateAndCheckoutBranch(branch string) {
 	_, err := exec.Command("git", "checkout", "-b", branch).Output()
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
 
-func CheckoutBranch(branch string) {
+func (g *gitService) CheckoutBranch(branch string) {
 	_, err := exec.Command("git", "checkout", branch).Output()
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
 
-func Show(thing string) string {
+func (g *gitService) Show(thing string) string {
 	out, err := exec.Command("git", "show", thing).Output()
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 	result := strings.TrimSpace(string(out))
 	return result
 }
 
-func Rebase(trunk string, branch string) error {
+func (g *gitService) Rebase(trunk string, branch string) error {
 	_, err := exec.Command("git", "rebase", trunk, branch).Output()
 	return err
 }
 
-func RebaseContinue() {
+func (g *gitService) RebaseContinue() {
 	cmd := exec.Command("git", "rebase", "--continue")
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	err := cmd.Run()
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
 
-func Commit() {
+func (g *gitService) Commit() {
 	cmd := exec.Command("git", "commit")
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	err := cmd.Run()
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
 
-func CommitAmend() {
+func (g *gitService) CommitAmend() {
 	cmd := exec.Command("git", "commit", "--amend")
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	err := cmd.Run()
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
 
-func BranchExists(branch string) bool {
+func (g *gitService) BranchExists(branch string) bool {
 	out, err := exec.Command("git", "branch").Output()
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 	branches := string(out)
 	return strings.Contains(branches, branch)
 }
 
-func PassThrough(args []string) {
+func (g *gitService) PassThrough(args []string) {
 	fmt.Printf(colors.Gray("Running \""))
 
 	cmdStr := fmt.Sprintf("git %s", strings.Join(args, " "))
@@ -112,28 +167,43 @@ func PassThrough(args []string) {
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	err := cmd.Run()
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
 
-func LogBetween(from string, to string) string {
+func (g *gitService) LogBetween(from string, to string) string {
 	out, err := exec.Command("git", "log", "--oneline", "--no-decorate", fmt.Sprintf("%s..%s", from, to)).Output()
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 	return string(out)
 }
 
-func PushBranch(branch string) {
+func (g *gitService) PushBranch(branch string) {
 	_, err := exec.Command("git", "push", "-u", "origin", branch).Output()
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
 
-func ForcePushBranch(branch string) {
+func (g *gitService) ForcePushBranch(branch string) {
 	_, err := exec.Command("git", "push", "-f", "-u", "origin", branch).Output()
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
 
-func DirectoryPath() string {
+func (g *gitService) DirectoryPath() string {
 	out, err := exec.Command("git", "rev-parse", "--show-toplevel").Output()
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	return fmt.Sprintf("%s/.git", strings.TrimSpace(string(out)))
 }

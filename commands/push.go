@@ -5,44 +5,58 @@ import (
 
 	"github.com/underwoo16/git-stacks/colors"
 	"github.com/underwoo16/git-stacks/git"
+	"github.com/underwoo16/git-stacks/metadata"
 	"github.com/underwoo16/git-stacks/queue"
 	"github.com/underwoo16/git-stacks/stacks"
 )
 
 // TODO: check if branch is ahead before pushing
 // TODO: check if branch is behind before pushing
-func Push(args []string) {
-	currentStack := stacks.GetCurrentStackNode()
+
+type PushCommand struct {
+	GitService      git.GitService
+	StackService    stacks.StackService
+	MetadataService metadata.MetadataService
+}
+
+func (p *PushCommand) Run(args []string) {
+	currentStack := p.StackService.GetCurrentStackNode()
 	if len(args) < 1 {
-		if stacks.NeedsSync(currentStack) {
+		if p.StackService.NeedsSync(currentStack) {
 			fmt.Printf("Rebasing %s onto %s\n", colors.CurrentStack(currentStack.Name), colors.OtherStack(currentStack.ParentBranch))
-			git.Rebase(currentStack.ParentBranch, currentStack.Name)
+			p.GitService.Rebase(currentStack.ParentBranch, currentStack.Name)
 
 			// TODO: consolidate this logic - it is repeated in several places
-			newParentSha := git.RevParse(currentStack.ParentBranch)
-			newSha := git.RevParse(currentStack.Name)
+			newParentSha := p.GitService.RevParse(currentStack.ParentBranch)
+			newSha := p.GitService.RevParse(currentStack.Name)
 			currentStack.RefSha = newSha
 			currentStack.ParentRefSha = newParentSha
-			stacks.CacheGraphToDisk(currentStack)
+			p.StackService.CacheGraphToDisk(currentStack)
 
 			fmt.Printf("Pushing %s\n", colors.CurrentStack(currentStack.Name))
-			git.ForcePushBranch(currentStack.Name)
+			p.GitService.ForcePushBranch(currentStack.Name)
 			return
 		}
 
 		fmt.Printf("Pushing %s\n", colors.CurrentStack(currentStack.Name))
-		git.PushBranch(currentStack.Name)
+		p.GitService.PushBranch(currentStack.Name)
 		return
 	}
 
 	if args[0] == "all" {
-		trunk := stacks.GetGraph()
-		Resync(trunk)
-		stacks.CacheGraphToDisk(trunk)
+		trunk := p.StackService.GetGraph()
 
-		pushAllStacks(trunk)
+		syncCommand := &SyncCommand{
+			MetadataService: p.MetadataService,
+			StackService:    p.StackService,
+			GitService:      p.GitService,
+		}
+		syncCommand.Resync(trunk)
+		p.StackService.CacheGraphToDisk(trunk)
 
-		git.CheckoutBranch(currentStack.Name)
+		p.pushAllStacks(trunk)
+
+		p.GitService.CheckoutBranch(currentStack.Name)
 		return
 	}
 
@@ -50,7 +64,7 @@ func Push(args []string) {
 	fmt.Println("Invalid arguments")
 }
 
-func pushAllStacks(trunk *stacks.StackNode) {
+func (p *PushCommand) pushAllStacks(trunk *stacks.StackNode) {
 	pushQueue := queue.New()
 	pushQueue.Push(trunk)
 
@@ -66,6 +80,6 @@ func pushAllStacks(trunk *stacks.StackNode) {
 		}
 
 		fmt.Printf("Pushing %s\n", colors.CurrentStack(stack.Name))
-		git.ForcePushBranch(stack.Name)
+		p.GitService.ForcePushBranch(stack.Name)
 	}
 }

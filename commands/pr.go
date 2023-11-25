@@ -5,29 +5,44 @@ import (
 
 	"github.com/underwoo16/git-stacks/colors"
 	"github.com/underwoo16/git-stacks/git"
+	"github.com/underwoo16/git-stacks/metadata"
 	"github.com/underwoo16/git-stacks/queue"
 	"github.com/underwoo16/git-stacks/stacks"
 )
 
-func Pr(args []string) {
-	currentStack := stacks.GetCurrentStackNode()
-	pullRequests := git.GetPullRequests()
-	if len(args) < 1 {
-		git.Rebase(currentStack.ParentBranch, currentStack.Name)
-		submitPullRequestForStack(currentStack, pullRequests)
+type PrCommand struct {
+	GitService      git.GitService
+	StackService    stacks.StackService
+	GitHubService   git.GitHubService
+	MetadataService metadata.MetadataService
+}
 
-		git.CheckoutBranch(currentStack.Name)
+func (p *PrCommand) Run(args []string) {
+	pullRequests := p.GitHubService.GetPullRequests()
+	currentStack := p.StackService.GetCurrentStackNode()
+	if len(args) < 1 {
+		p.GitService.Rebase(currentStack.ParentBranch, currentStack.Name)
+		p.submitPullRequestForStack(currentStack, pullRequests)
+
+		p.GitService.CheckoutBranch(currentStack.Name)
 		return
 	}
 
 	if args[0] == "all" {
-		trunk := stacks.GetGraph()
-		Resync(trunk)
-		stacks.CacheGraphToDisk(trunk)
+		trunk := p.StackService.GetGraph()
 
-		submitAllPullRequests(trunk, pullRequests)
+		syncCommand := &SyncCommand{
+			MetadataService: p.MetadataService,
+			StackService:    p.StackService,
+			GitService:      p.GitService,
+		}
 
-		git.CheckoutBranch(currentStack.Name)
+		syncCommand.Resync(trunk)
+		p.StackService.CacheGraphToDisk(trunk)
+
+		p.submitAllPullRequests(trunk, pullRequests)
+
+		p.GitService.CheckoutBranch(currentStack.Name)
 		return
 	}
 
@@ -35,7 +50,7 @@ func Pr(args []string) {
 	fmt.Println("Invalid arguments")
 }
 
-func submitAllPullRequests(trunk *stacks.StackNode, pullRequests []git.PullRequest) {
+func (p *PrCommand) submitAllPullRequests(trunk *stacks.StackNode, pullRequests []git.PullRequest) {
 	prQueue := queue.New()
 	prQueue.Push(trunk)
 
@@ -46,11 +61,11 @@ func submitAllPullRequests(trunk *stacks.StackNode, pullRequests []git.PullReque
 			prQueue.Push(child)
 		}
 
-		submitPullRequestForStack(stack, pullRequests)
+		p.submitPullRequestForStack(stack, pullRequests)
 	}
 }
 
-func submitPullRequestForStack(stack *stacks.StackNode, pullRequests []git.PullRequest) {
+func (pc *PrCommand) submitPullRequestForStack(stack *stacks.StackNode, pullRequests []git.PullRequest) {
 	if stack == nil {
 		return
 	}
@@ -60,19 +75,19 @@ func submitPullRequestForStack(stack *stacks.StackNode, pullRequests []git.PullR
 		return
 	}
 
-	pullRequest := pullRequestFor(stack.Name, parent.Name, pullRequests)
+	pullRequest := pc.pullRequestFor(stack.Name, parent.Name, pullRequests)
 	if pullRequest != nil {
 		fmt.Printf("Pull request already exists for %s\n", stack.Name)
 		fmt.Printf("View it here: %s\n", colors.Blue(pullRequest.Url))
 		return
 	}
 
-	git.ForcePushBranch(stack.Name)
+	pc.GitService.ForcePushBranch(stack.Name)
 
-	git.CreatePullRequest(parent.Name, stack.Name)
+	pc.GitHubService.CreatePullRequest(parent.Name, stack.Name)
 }
 
-func pullRequestFor(head string, base string, pulls []git.PullRequest) *git.PullRequest {
+func (pc *PrCommand) pullRequestFor(head string, base string, pulls []git.PullRequest) *git.PullRequest {
 	for _, pull := range pulls {
 		if pull.HeadRefName == head && pull.BaseRefName == base {
 			return &pull

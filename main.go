@@ -5,6 +5,10 @@ import (
 	"os"
 
 	"github.com/underwoo16/git-stacks/commands"
+	"github.com/underwoo16/git-stacks/git"
+	"github.com/underwoo16/git-stacks/metadata"
+	"github.com/underwoo16/git-stacks/stacks"
+	"github.com/underwoo16/git-stacks/utils"
 )
 
 func main() {
@@ -15,24 +19,71 @@ func main() {
 		os.Exit(1)
 	}
 
+	fileService := utils.NewFileService()
+	gitService := git.NewGitService()
+	gitHubService := git.NewGitHubService()
+	metadataService := metadata.NewMetadataService(gitService, fileService)
+	stackService := stacks.NewStackService(gitService, metadataService, fileService)
+
 	switch args[0] {
 	case "continue":
-		commands.Continue()
+		cmd := commands.ContinueCommand{
+			GitService:      gitService,
+			MetadataService: metadataService,
+			StackService:    stackService,
+		}
+		cmd.Run()
 	case "stack":
-		commands.Stack(args[1:])
+		cmd := commands.StackCommand{
+			GitService:      gitService,
+			MetadataService: metadataService,
+			StackService:    stackService,
+		}
+		cmd.Run(args[1:])
 	case "show":
-		commands.Show()
+		cmd := commands.ShowCommand{
+			GitService:   gitService,
+			StackService: stackService,
+		}
+		cmd.Run()
 	case "down":
-		commands.Down()
+		cmd := commands.DownCommand{
+			GitService:   gitService,
+			StackService: stackService,
+		}
+		cmd.Run()
 	case "up":
-		commands.Up()
+		cmd := commands.UpCommand{
+			GitService:   gitService,
+			StackService: stackService,
+		}
+		cmd.Run()
 	case "sync":
-		commands.Sync()
+		cmd := commands.SyncCommand{
+			GitService:      gitService,
+			MetadataService: metadataService,
+			StackService:    stackService,
+		}
+		cmd.Run()
 	case "pr":
-		commands.Pr(args[1:])
+		cmd := commands.PrCommand{
+			GitService:      gitService,
+			MetadataService: metadataService,
+			StackService:    stackService,
+			GitHubService:   gitHubService,
+		}
+		cmd.Run(args[1:])
 	case "push-stack":
-		commands.Push(args[1:])
+		cmd := commands.PushCommand{
+			GitService:      gitService,
+			MetadataService: metadataService,
+			StackService:    stackService,
+		}
+		cmd.Run(args[1:])
 	default:
-		commands.PassThrough(args)
+		cmd := commands.PassThroughCommand{
+			GitService: gitService,
+		}
+		cmd.Run(args)
 	}
 }

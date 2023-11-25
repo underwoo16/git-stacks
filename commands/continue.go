@@ -5,29 +5,36 @@ import (
 	"log"
 
 	"github.com/underwoo16/git-stacks/git"
+	"github.com/underwoo16/git-stacks/metadata"
 	"github.com/underwoo16/git-stacks/queue"
 	"github.com/underwoo16/git-stacks/stacks"
 )
 
-func Continue() {
-	if !stacks.ContinueInfoExists() {
+type ContinueCommand struct {
+	GitService      git.GitService
+	MetadataService metadata.MetadataService
+	StackService    stacks.StackService
+}
+
+func (c *ContinueCommand) Run() {
+	if !c.MetadataService.ContinueInfoExists() {
 		log.Fatal("No continue info found")
 	}
 
 	fmt.Println("Continuing sync...")
-	continueInfo := stacks.GetContinueInfo()
+	continueInfo := c.MetadataService.GetContinueInfo()
 
-	trunk := stacks.GetGraph()
+	trunk := c.StackService.GetGraph()
 	stackMap := make(map[string]*stacks.StackNode)
 	populateMap(trunk, stackMap)
 
 	fmt.Println("Continuing rebase...")
-	git.RebaseContinue()
+	c.GitService.RebaseContinue()
 
 	continueBanch := continueInfo.ContinueBranch
 	stack := stackMap[continueBanch]
-	stack.RefSha = git.RevParse(continueBanch)
-	stack.ParentRefSha = git.RevParse(stack.ParentBranch)
+	stack.RefSha = c.GitService.RevParse(continueBanch)
+	stack.ParentRefSha = c.GitService.RevParse(stack.ParentBranch)
 
 	fmt.Println("Syncing stacks...")
 	branches := continueInfo.Branches
@@ -43,19 +50,24 @@ func Continue() {
 		syncQueue.Push(stack)
 	}
 
+	syncCommand := SyncCommand{
+		GitService:      c.GitService,
+		MetadataService: c.MetadataService,
+		StackService:    c.StackService,
+	}
 	for !syncQueue.IsEmpty() {
 		stack := syncQueue.Pop().(*stacks.StackNode)
 		for _, child := range stack.Children {
 			syncQueue.Push(child)
 		}
 
-		SyncStack(stack, syncQueue)
+		syncCommand.SyncStack(stack, syncQueue)
 	}
 
 	fmt.Println("Sync complete")
-	stacks.CacheGraphToDisk(trunk)
+	c.StackService.CacheGraphToDisk(trunk)
 
-	stacks.RemoveContinueInfo()
+	c.MetadataService.RemoveContinueInfo()
 }
 
 func populateMap(stack *stacks.StackNode, stackMap map[string]*stacks.StackNode) {
