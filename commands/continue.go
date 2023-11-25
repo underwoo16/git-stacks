@@ -10,6 +10,7 @@ import (
 )
 
 func Continue() {
+	gitService := git.NewGitService()
 	if !stacks.ContinueInfoExists() {
 		log.Fatal("No continue info found")
 	}
@@ -22,12 +23,12 @@ func Continue() {
 	populateMap(trunk, stackMap)
 
 	fmt.Println("Continuing rebase...")
-	git.RebaseContinue()
+	gitService.RebaseContinue()
 
 	continueBanch := continueInfo.ContinueBranch
 	stack := stackMap[continueBanch]
-	stack.RefSha = git.RevParse(continueBanch)
-	stack.ParentRefSha = git.RevParse(stack.ParentBranch)
+	stack.RefSha = gitService.RevParse(continueBanch)
+	stack.ParentRefSha = gitService.RevParse(stack.ParentBranch)
 
 	fmt.Println("Syncing stacks...")
 	branches := continueInfo.Branches

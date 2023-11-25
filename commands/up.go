@@ -40,7 +40,8 @@ func Up() {
 func switchToFrom(to string, from string) {
 	fmt.Printf("%s -> %s\n", colors.OtherStack(from), to)
 
-	git.CheckoutBranch(to)
+	gitService := git.NewGitService()
+	gitService.CheckoutBranch(to)
 	fmt.Printf("Switched to %s.\n", colors.CurrentStack(to))
 }
 

@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/underwoo16/git-stacks/commands"
+	"github.com/underwoo16/git-stacks/stacks"
 )
 
 func main() {
@@ -32,6 +33,8 @@ func main() {
 		commands.Pr(args[1:])
 	case "push-stack":
 		commands.Push(args[1:])
+	case "test":
+		stacks.GetCurrentStackNode()
 	default:
 		commands.PassThrough(args)
 	}

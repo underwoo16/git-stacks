@@ -23,7 +23,8 @@ var horizBranch = "├"
 var vertBranch = "┴"
 
 func Show() {
-	currentBranch := git.GetCurrentBranch()
+	gitService := git.NewGitService()
+	currentBranch := gitService.GetCurrentBranch()
 	trunk := stacks.GetGraph()
 
 	depthStack, colMap := bfs(trunk, 0, []*stacks.StackNode{}, map[string]int{})
@@ -32,7 +33,7 @@ func Show() {
 	for depth := len(depthStack) - 1; depth >= 0; depth-- {
 		node := depthStack[depth]
 		col := colMap[node.Name]
-		logBetween := git.LogBetween(node.ParentBranch, node.Name)
+		logBetween := gitService.LogBetween(node.ParentBranch, node.Name)
 
 		writeRow(&sb, col)
 		writeStackLabel(&sb, node, currentBranch)

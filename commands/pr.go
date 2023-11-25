@@ -10,13 +10,14 @@ import (
 )
 
 func Pr(args []string) {
+	gitService := git.NewGitService()
 	currentStack := stacks.GetCurrentStackNode()
 	pullRequests := git.GetPullRequests()
 	if len(args) < 1 {
-		git.Rebase(currentStack.ParentBranch, currentStack.Name)
+		gitService.Rebase(currentStack.ParentBranch, currentStack.Name)
 		submitPullRequestForStack(currentStack, pullRequests)
 
-		git.CheckoutBranch(currentStack.Name)
+		gitService.CheckoutBranch(currentStack.Name)
 		return
 	}
 
@@ -27,7 +28,7 @@ func Pr(args []string) {
 
 		submitAllPullRequests(trunk, pullRequests)
 
-		git.CheckoutBranch(currentStack.Name)
+		gitService.CheckoutBranch(currentStack.Name)
 		return
 	}
 
@@ -67,7 +68,8 @@ func submitPullRequestForStack(stack *stacks.StackNode, pullRequests []git.PullR
 		return
 	}
 
-	git.ForcePushBranch(stack.Name)
+	gitService := git.NewGitService()
+	gitService.ForcePushBranch(stack.Name)
 
 	git.CreatePullRequest(parent.Name, stack.Name)
 }

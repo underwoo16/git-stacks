@@ -12,26 +12,27 @@ import (
 // TODO: check if branch is ahead before pushing
 // TODO: check if branch is behind before pushing
 func Push(args []string) {
+	gitService := git.NewGitService()
 	currentStack := stacks.GetCurrentStackNode()
 	if len(args) < 1 {
 		if stacks.NeedsSync(currentStack) {
 			fmt.Printf("Rebasing %s onto %s\n", colors.CurrentStack(currentStack.Name), colors.OtherStack(currentStack.ParentBranch))
-			git.Rebase(currentStack.ParentBranch, currentStack.Name)
+			gitService.Rebase(currentStack.ParentBranch, currentStack.Name)
 
 			// TODO: consolidate this logic - it is repeated in several places
-			newParentSha := git.RevParse(currentStack.ParentBranch)
-			newSha := git.RevParse(currentStack.Name)
+			newParentSha := gitService.RevParse(currentStack.ParentBranch)
+			newSha := gitService.RevParse(currentStack.Name)
 			currentStack.RefSha = newSha
 			currentStack.ParentRefSha = newParentSha
 			stacks.CacheGraphToDisk(currentStack)
 
 			fmt.Printf("Pushing %s\n", colors.CurrentStack(currentStack.Name))
-			git.ForcePushBranch(currentStack.Name)
+			gitService.ForcePushBranch(currentStack.Name)
 			return
 		}
 
 		fmt.Printf("Pushing %s\n", colors.CurrentStack(currentStack.Name))
-		git.PushBranch(currentStack.Name)
+		gitService.PushBranch(currentStack.Name)
 		return
 	}
 
@@ -42,7 +43,7 @@ func Push(args []string) {
 
 		pushAllStacks(trunk)
 
-		git.CheckoutBranch(currentStack.Name)
+		gitService.CheckoutBranch(currentStack.Name)
 		return
 	}
 
@@ -66,6 +67,7 @@ func pushAllStacks(trunk *stacks.StackNode) {
 		}
 
 		fmt.Printf("Pushing %s\n", colors.CurrentStack(stack.Name))
-		git.ForcePushBranch(stack.Name)
+		gitService := git.NewGitService()
+		gitService.ForcePushBranch(stack.Name)
 	}
 }

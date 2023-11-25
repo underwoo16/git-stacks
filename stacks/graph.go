@@ -16,9 +16,11 @@ func GetGraph() *StackNode {
 
 func GetGraphFromRefs() *StackNode {
 	config := GetConfig()
+
+	gitService := git.NewGitService()
 	trunk := StackNode{
 		Name:     config.Trunk,
-		RefSha:   git.RevParse(config.Trunk),
+		RefSha:   gitService.RevParse(config.Trunk),
 		Children: []*StackNode{},
 	}
 

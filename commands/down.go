@@ -11,8 +11,9 @@ import (
 func Down() {
 	currentNode := stacks.GetCurrentStackNode()
 
+	gitService := git.NewGitService()
 	if currentNode == nil || currentNode.Parent == nil {
-		fmt.Printf("%s\n", colors.CurrentStack(git.GetCurrentBranch()))
+		fmt.Printf("%s\n", colors.CurrentStack(gitService.GetCurrentBranch()))
 		fmt.Printf("Already at bottom of stack.\n")
 		return
 	}
@@ -21,6 +22,6 @@ func Down() {
 
 	fmt.Printf("%s <- %s\n", parentBranch, colors.OtherStack(currentNode.Name))
 
-	git.CheckoutBranch(parentBranch)
+	gitService.CheckoutBranch(parentBranch)
 	fmt.Printf("Switched to %s.\n", colors.CurrentStack(parentBranch))
 }

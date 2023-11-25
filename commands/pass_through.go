@@ -5,5 +5,6 @@ import (
 )
 
 func PassThrough(args []string) {
-	git.PassThrough(args)
+	gitService := git.NewGitService()
+	gitService.PassThrough(args)
 }

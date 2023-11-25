@@ -10,8 +10,9 @@ import (
 )
 
 func Stack(args []string) {
-	parentBranch := git.GetCurrentBranch()
-	parentRefSha := git.GetCurrentSha()
+	gitService := git.NewGitService()
+	parentBranch := gitService.GetCurrentBranch()
+	parentRefSha := gitService.GetCurrentSha()
 
 	if !stacks.ConfigExists() {
 		fmt.Println("No stacks found. Initializing...")
@@ -19,7 +20,7 @@ func Stack(args []string) {
 	}
 
 	stackName := stackNameFromArgs(args)
-	if git.BranchExists(stackName) {
+	if gitService.BranchExists(stackName) {
 		fmt.Printf("Branch '%s' already exists\n", stackName)
 		os.Exit(1)
 	}

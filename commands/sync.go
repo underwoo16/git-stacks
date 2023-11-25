@@ -13,11 +13,13 @@ import (
 // TODO: use rerere
 func Sync() {
 	fmt.Printf("Syncing stacks...\n")
-	currentBranch := git.GetCurrentBranch()
+
+	gitService := git.NewGitService()
+	currentBranch := gitService.GetCurrentBranch()
 	trunk := stacks.GetGraph()
 	Resync(trunk)
 	stacks.CacheGraphToDisk(trunk)
-	git.CheckoutBranch(currentBranch)
+	gitService.CheckoutBranch(currentBranch)
 }
 
 func Resync(trunk *stacks.StackNode) {
@@ -41,7 +43,8 @@ func SyncStack(stack *stacks.StackNode, syncQueue *queue.Queue) {
 
 	fmt.Printf("Rebasing %s onto %s\n", colors.CurrentStack(stack.Name), colors.OtherStack(stack.ParentBranch))
 
-	err := git.Rebase(stack.ParentBranch, stack.Name)
+	gitService := git.NewGitService()
+	err := gitService.Rebase(stack.ParentBranch, stack.Name)
 	if err != nil {
 		fmt.Printf("'%s' rebase failed\n", stack.Name)
 		fmt.Printf("Resolve conflicts and run %s\n", colors.Yellow("git-stacks continue"))
@@ -51,8 +54,9 @@ func SyncStack(stack *stacks.StackNode, syncQueue *queue.Queue) {
 		os.Exit(1)
 	}
 
-	newParentSha := git.RevParse(stack.ParentBranch)
-	newSha := git.RevParse(stack.Name)
+	// TODO: don't create new git service - use class reference once this is a class
+	newParentSha := gitService.RevParse(stack.ParentBranch)
+	newSha := gitService.RevParse(stack.Name)
 	stack.RefSha = newSha
 	stack.ParentRefSha = newParentSha
 }
