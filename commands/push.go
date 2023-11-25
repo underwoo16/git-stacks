@@ -13,7 +13,7 @@ import (
 // TODO: check if branch is behind before pushing
 
 type PushCommand struct {
-	GitService      *git.GitService
+	GitService      git.GitService
 	StackService    *stacks.StackService
 	MetadataService *stacks.MetadataService
 }

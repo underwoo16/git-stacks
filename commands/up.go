@@ -12,7 +12,7 @@ import (
 )
 
 type UpCommand struct {
-	GitService   *git.GitService
+	GitService   git.GitService
 	StackService *stacks.StackService
 }
 

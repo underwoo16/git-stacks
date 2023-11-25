@@ -23,7 +23,7 @@ var horizBranch = "├"
 var vertBranch = "┴"
 
 type ShowCommand struct {
-	GitService   *git.GitService
+	GitService   git.GitService
 	StackService *stacks.StackService
 }
 

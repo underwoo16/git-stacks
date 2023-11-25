@@ -10,7 +10,7 @@ import (
 )
 
 type StackCommand struct {
-	GitService      *git.GitService
+	GitService      git.GitService
 	StackService    *stacks.StackService
 	MetadataService *stacks.MetadataService
 }

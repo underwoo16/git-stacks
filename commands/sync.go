@@ -13,7 +13,7 @@ import (
 type SyncCommand struct {
 	MetadataService *stacks.MetadataService
 	StackService    *stacks.StackService
-	GitService      *git.GitService
+	GitService      git.GitService
 }
 
 func (sc *SyncCommand) Run() {

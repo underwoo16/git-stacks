@@ -32,10 +32,10 @@ type ContinueInfo struct {
 }
 
 type MetadataService struct {
-	gitService *git.GitService
+	gitService git.GitService
 }
 
-func NewMetadataService(gitService *git.GitService) *MetadataService {
+func NewMetadataService(gitService git.GitService) *MetadataService {
 	return &MetadataService{gitService: gitService}
 }
 

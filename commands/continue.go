@@ -10,7 +10,7 @@ import (
 )
 
 type ContinueCommand struct {
-	GitService      *git.GitService
+	GitService      git.GitService
 	MetadataService *stacks.MetadataService
 	StackService    *stacks.StackService
 }

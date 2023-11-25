@@ -9,7 +9,7 @@ import (
 )
 
 type DownCommand struct {
-	GitService   *git.GitService
+	GitService   git.GitService
 	StackService *stacks.StackService
 }
 

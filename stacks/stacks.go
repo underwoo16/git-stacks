@@ -20,11 +20,11 @@ type StackNode struct {
 }
 
 type StackService struct {
-	gitService      *git.GitService
+	gitService      git.GitService
 	metadataService *MetadataService
 }
 
-func NewStackService(gitService *git.GitService, metadataService *MetadataService) *StackService {
+func NewStackService(gitService git.GitService, metadataService *MetadataService) *StackService {
 	return &StackService{gitService: gitService, metadataService: metadataService}
 }
 

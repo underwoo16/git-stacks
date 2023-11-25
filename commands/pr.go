@@ -10,7 +10,7 @@ import (
 )
 
 type PrCommand struct {
-	GitService      *git.GitService
+	GitService      git.GitService
 	StackService    *stacks.StackService
 	GitHubService   *git.GitHubService
 	MetadataService *stacks.MetadataService
