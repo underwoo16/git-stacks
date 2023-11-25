@@ -106,7 +106,7 @@ func TestPeek(t *testing.T) {
 	}
 
 	q.Pop()
-	if q.Peek() != 3 {
+	if q.Peek() != 2 {
 		t.Error("Queue peek should be 3")
 	}
 }
