@@ -11,12 +11,14 @@ import (
 
 func Continue() {
 	gitService := git.NewGitService()
-	if !stacks.ContinueInfoExists() {
+	metadataService := stacks.NewMetadataService(gitService)
+
+	if !metadataService.ContinueInfoExists() {
 		log.Fatal("No continue info found")
 	}
 
 	fmt.Println("Continuing sync...")
-	continueInfo := stacks.GetContinueInfo()
+	continueInfo := metadataService.GetContinueInfo()
 
 	trunk := stacks.GetGraph()
 	stackMap := make(map[string]*stacks.StackNode)
@@ -56,7 +58,7 @@ func Continue() {
 	fmt.Println("Sync complete")
 	stacks.CacheGraphToDisk(trunk)
 
-	stacks.RemoveContinueInfo()
+	metadataService.RemoveContinueInfo()
 }
 
 func populateMap(stack *stacks.StackNode, stackMap map[string]*stacks.StackNode) {

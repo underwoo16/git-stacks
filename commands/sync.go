@@ -50,7 +50,8 @@ func SyncStack(stack *stacks.StackNode, syncQueue *queue.Queue) {
 		fmt.Printf("Resolve conflicts and run %s\n", colors.Yellow("git-stacks continue"))
 		fmt.Printf("Alternatively, run %s to abort the rebase\n", colors.Yellow("git-stacks rebase --abort"))
 
-		stacks.StoreContinueInfo(stack.Name, syncQueue)
+		metadataService := stacks.NewMetadataService(gitService)
+		metadataService.StoreContinueInfo(stack.Name, syncQueue)
 		os.Exit(1)
 	}
 

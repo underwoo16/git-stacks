@@ -11,12 +11,13 @@ import (
 
 func Stack(args []string) {
 	gitService := git.NewGitService()
+	metadataService := stacks.NewMetadataService(gitService)
 	parentBranch := gitService.GetCurrentBranch()
 	parentRefSha := gitService.GetCurrentSha()
 
-	if !stacks.ConfigExists() {
+	if !metadataService.ConfigExists() {
 		fmt.Println("No stacks found. Initializing...")
-		stacks.UpdateConfig(stacks.Config{Trunk: parentBranch})
+		metadataService.UpdateConfig(stacks.Config{Trunk: parentBranch})
 	}
 
 	stackName := stackNameFromArgs(args)

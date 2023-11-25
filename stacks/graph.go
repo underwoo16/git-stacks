@@ -5,7 +5,8 @@ import (
 )
 
 func GetGraph() *StackNode {
-	if CacheExists() {
+	metadataService := MetadataService{gitService: git.NewGitService()}
+	if metadataService.CacheExists() {
 		return GetGraphFromCache()
 	}
 
@@ -15,7 +16,8 @@ func GetGraph() *StackNode {
 }
 
 func GetGraphFromRefs() *StackNode {
-	config := GetConfig()
+	metadataService := MetadataService{gitService: git.NewGitService()}
+	config := metadataService.GetConfig()
 
 	gitService := git.NewGitService()
 	trunk := StackNode{
@@ -47,7 +49,8 @@ func BuildGraphIterative(trunk *StackNode, allStacks []*StackNode) *StackNode {
 }
 
 func GetGraphFromCache() *StackNode {
-	branches := GetCache().Branches
+	metadataService := MetadataService{gitService: git.NewGitService()}
+	branches := metadataService.GetCache().Branches
 	stackMap := make(map[string]*StackNode)
 
 	for _, branch := range branches {
@@ -73,7 +76,7 @@ func GetGraphFromCache() *StackNode {
 		}
 	}
 
-	trunkName := GetConfig().Trunk
+	trunkName := metadataService.GetConfig().Trunk
 	trunk := stackMap[trunkName]
 
 	return trunk
@@ -82,7 +85,9 @@ func GetGraphFromCache() *StackNode {
 func CacheGraphToDisk(trunk *StackNode) {
 	trunk = FindTrunk(trunk)
 	branches := bfs(trunk, []Branch{})
-	UpdateCache(Cache{Branches: branches})
+
+	metadataService := MetadataService{gitService: git.NewGitService()}
+	metadataService.UpdateCache(Cache{Branches: branches})
 }
 
 func FindTrunk(node *StackNode) *StackNode {

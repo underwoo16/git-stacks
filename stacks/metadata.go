@@ -31,11 +31,20 @@ type ContinueInfo struct {
 	Branches       []string
 }
 
-func ConfigExists() bool {
-	return utils.FileExists(".git/.stacks_config")
+type MetadataService struct {
+	gitService *git.GitService
 }
 
-func UpdateConfig(config Config) {
+func NewMetadataService(gitService *git.GitService) *MetadataService {
+	return &MetadataService{gitService: gitService}
+}
+
+func (m *MetadataService) ConfigExists() bool {
+	gitPath := fmt.Sprintf("%s/.stacks_config", m.gitService.DirectoryPath())
+	return utils.FileExists(gitPath)
+}
+
+func (m *MetadataService) UpdateConfig(config Config) {
 	gitService := git.NewGitService()
 	b, err := json.Marshal(config)
 	utils.CheckError(err)
@@ -44,12 +53,12 @@ func UpdateConfig(config Config) {
 	utils.WriteByteArrayToFile(b, configPath)
 }
 
-func GetConfig() Config {
+func (m *MetadataService) GetConfig() Config {
 	gitService := git.NewGitService()
-	if !ConfigExists() {
+	if !m.ConfigExists() {
 		currentBranch := gitService.GetCurrentBranch()
 		config := Config{Trunk: currentBranch}
-		UpdateConfig(config)
+		m.UpdateConfig(config)
 		return config
 	}
 
@@ -62,36 +71,38 @@ func GetConfig() Config {
 	return config
 }
 
-func CacheExists() bool {
+func (m *MetadataService) CacheExists() bool {
 	gitService := git.NewGitService()
 	cachePath := fmt.Sprintf("%s/.stacks_cache", gitService.DirectoryPath())
 	return utils.FileExists(cachePath)
 }
 
-func GetCache() Cache {
-	if !CacheExists() {
+func (m *MetadataService) GetCache() Cache {
+	if !m.CacheExists() {
 		// TODO: add trunk here at minimum
 		// could also build graph and populate it fully
 		cache := Cache{Branches: []Branch{}}
-		UpdateCache(cache)
+		m.UpdateCache(cache)
 		return cache
 	}
 
-	ba := utils.ReadFileToByteArray(".git/.stacks_cache")
+	cachePath := fmt.Sprintf("%s/.stacks_cache", m.gitService.DirectoryPath())
+	ba := utils.ReadFileToByteArray(cachePath)
 	var cache Cache
 	utils.CheckError(json.Unmarshal(ba, &cache))
 
 	return cache
 }
 
-func UpdateCache(cache Cache) {
+func (m *MetadataService) UpdateCache(cache Cache) {
 	b, err := json.Marshal(cache)
 	utils.CheckError(err)
 
-	utils.WriteByteArrayToFile(b, ".git/.stacks_cache")
+	cachePath := fmt.Sprintf("%s/.stacks_cache", m.gitService.DirectoryPath())
+	utils.WriteByteArrayToFile(b, cachePath)
 }
 
-func StoreContinueInfo(branch string, queue *queue.Queue) {
+func (m *MetadataService) StoreContinueInfo(branch string, queue *queue.Queue) {
 	var branches []string
 	for !queue.IsEmpty() {
 		stack := queue.Pop().(*StackNode)
@@ -107,13 +118,13 @@ func StoreContinueInfo(branch string, queue *queue.Queue) {
 	utils.WriteByteArrayToFile(b, continePath)
 }
 
-func ContinueInfoExists() bool {
+func (m *MetadataService) ContinueInfoExists() bool {
 	gitService := git.NewGitService()
 	continePath := fmt.Sprintf("%s/.stacks_continue", gitService.DirectoryPath())
 	return utils.FileExists(continePath)
 }
 
-func GetContinueInfo() ContinueInfo {
+func (m *MetadataService) GetContinueInfo() ContinueInfo {
 	gitService := git.NewGitService()
 	continePath := fmt.Sprintf("%s/.stacks_continue", gitService.DirectoryPath())
 	ba := utils.ReadFileToByteArray(continePath)
@@ -123,7 +134,7 @@ func GetContinueInfo() ContinueInfo {
 	return continueInfo
 }
 
-func RemoveContinueInfo() {
+func (m *MetadataService) RemoveContinueInfo() {
 	gitService := git.NewGitService()
 	continePath := fmt.Sprintf("%s/.stacks_continue", gitService.DirectoryPath())
 	utils.RemoveFile(continePath)
