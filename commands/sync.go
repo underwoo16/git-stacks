@@ -6,12 +6,13 @@ import (
 
 	"github.com/underwoo16/git-stacks/colors"
 	"github.com/underwoo16/git-stacks/git"
+	"github.com/underwoo16/git-stacks/metadata"
 	"github.com/underwoo16/git-stacks/queue"
 	"github.com/underwoo16/git-stacks/stacks"
 )
 
 type SyncCommand struct {
-	MetadataService *stacks.MetadataService
+	MetadataService metadata.MetadataService
 	StackService    *stacks.StackService
 	GitService      git.GitService
 }
@@ -55,7 +56,11 @@ func (sc *SyncCommand) SyncStack(stack *stacks.StackNode, syncQueue *queue.Queue
 		fmt.Printf("Resolve conflicts and run %s\n", colors.Yellow("git-stacks continue"))
 		fmt.Printf("Alternatively, run %s to abort the rebase\n", colors.Yellow("git-stacks rebase --abort"))
 
-		sc.MetadataService.StoreContinueInfo(stack.Name, syncQueue)
+		var branches []string
+		for !syncQueue.IsEmpty() {
+			branches = append(branches, syncQueue.Pop().(*stacks.StackNode).Name)
+		}
+		sc.MetadataService.StoreContinueInfo(stack.Name, branches)
 		os.Exit(1)
 	}
 

@@ -8,6 +8,11 @@ import (
 	"github.com/underwoo16/git-stacks/utils"
 )
 
+type GitHubService interface {
+	GetPullRequests() []PullRequest
+	CreatePullRequest(baseBranch string, headBranch string)
+}
+
 type PullRequest struct {
 	BaseRefName string `json:"baseRefName"`
 	HeadRefName string `json:"headRefName"`
@@ -16,15 +21,15 @@ type PullRequest struct {
 	Url         string `json:"url"`
 }
 
-type GitHubService struct{}
+type gitHubService struct{}
 
 // TODO: Add func to test if gh is installed
 
-func NewGitHubService() *GitHubService {
-	return &GitHubService{}
+func NewGitHubService() *gitHubService {
+	return &gitHubService{}
 }
 
-func (gh *GitHubService) GetPullRequests() []PullRequest {
+func (gh *gitHubService) GetPullRequests() []PullRequest {
 	out, err := exec.Command("gh", "pr", "list", "--author", "@me", "--json", "number,baseRefName,headRefName,url").Output()
 	utils.CheckError(err)
 
@@ -35,7 +40,7 @@ func (gh *GitHubService) GetPullRequests() []PullRequest {
 }
 
 // TODO: Default title, body, and submit
-func (gh *GitHubService) CreatePullRequest(baseBranch string, headBranch string) {
+func (gh *gitHubService) CreatePullRequest(baseBranch string, headBranch string) {
 	cmd := exec.Command("gh", "pr", "create", "-B", baseBranch, "-H", headBranch)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

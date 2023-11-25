@@ -5,6 +5,7 @@ import (
 
 	"github.com/underwoo16/git-stacks/colors"
 	"github.com/underwoo16/git-stacks/git"
+	"github.com/underwoo16/git-stacks/metadata"
 	"github.com/underwoo16/git-stacks/queue"
 	"github.com/underwoo16/git-stacks/stacks"
 )
@@ -12,8 +13,8 @@ import (
 type PrCommand struct {
 	GitService      git.GitService
 	StackService    *stacks.StackService
-	GitHubService   *git.GitHubService
-	MetadataService *stacks.MetadataService
+	GitHubService   git.GitHubService
+	MetadataService metadata.MetadataService
 }
 
 func (pc *PrCommand) Run(args []string) {

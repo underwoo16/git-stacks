@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/underwoo16/git-stacks/git"
+	"github.com/underwoo16/git-stacks/metadata"
 	"github.com/underwoo16/git-stacks/utils"
 )
 
@@ -21,10 +22,10 @@ type StackNode struct {
 
 type StackService struct {
 	gitService      git.GitService
-	metadataService *MetadataService
+	metadataService metadata.MetadataService
 }
 
-func NewStackService(gitService git.GitService, metadataService *MetadataService) *StackService {
+func NewStackService(gitService git.GitService, metadataService metadata.MetadataService) *StackService {
 	return &StackService{gitService: gitService, metadataService: metadataService}
 }
 

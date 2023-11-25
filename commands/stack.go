@@ -6,13 +6,14 @@ import (
 
 	"github.com/underwoo16/git-stacks/colors"
 	"github.com/underwoo16/git-stacks/git"
+	"github.com/underwoo16/git-stacks/metadata"
 	"github.com/underwoo16/git-stacks/stacks"
 )
 
 type StackCommand struct {
 	GitService      git.GitService
 	StackService    *stacks.StackService
-	MetadataService *stacks.MetadataService
+	MetadataService metadata.MetadataService
 }
 
 func (s *StackCommand) Run(args []string) {
@@ -21,7 +22,7 @@ func (s *StackCommand) Run(args []string) {
 
 	if !s.MetadataService.ConfigExists() {
 		fmt.Println("No stacks found. Initializing...")
-		s.MetadataService.UpdateConfig(stacks.Config{Trunk: parentBranch})
+		s.MetadataService.UpdateConfig(metadata.Config{Trunk: parentBranch})
 	}
 
 	stackName := stackNameFromArgs(args)

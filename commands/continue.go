@@ -5,13 +5,14 @@ import (
 	"log"
 
 	"github.com/underwoo16/git-stacks/git"
+	"github.com/underwoo16/git-stacks/metadata"
 	"github.com/underwoo16/git-stacks/queue"
 	"github.com/underwoo16/git-stacks/stacks"
 )
 
 type ContinueCommand struct {
 	GitService      git.GitService
-	MetadataService *stacks.MetadataService
+	MetadataService metadata.MetadataService
 	StackService    *stacks.StackService
 }
 

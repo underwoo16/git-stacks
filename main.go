@@ -6,6 +6,7 @@ import (
 
 	"github.com/underwoo16/git-stacks/commands"
 	"github.com/underwoo16/git-stacks/git"
+	"github.com/underwoo16/git-stacks/metadata"
 	"github.com/underwoo16/git-stacks/stacks"
 )
 
@@ -19,7 +20,7 @@ func main() {
 
 	gitService := git.NewGitService()
 	gitHubService := git.NewGitHubService()
-	metadataService := stacks.NewMetadataService(gitService)
+	metadataService := metadata.NewMetadataService(gitService)
 	stackService := stacks.NewStackService(gitService, metadataService)
 
 	switch args[0] {

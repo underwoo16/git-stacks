@@ -1,5 +1,7 @@
 package stacks
 
+import "github.com/underwoo16/git-stacks/metadata"
+
 func (s *StackService) GetGraph() *StackNode {
 	if s.metadataService.CacheExists() {
 		return s.GetGraphFromCache()
@@ -76,9 +78,9 @@ func (s *StackService) GetGraphFromCache() *StackNode {
 
 func (s *StackService) CacheGraphToDisk(trunk *StackNode) {
 	trunk = s.FindTrunk(trunk)
-	branches := bfs(trunk, []Branch{})
+	branches := bfs(trunk, []metadata.Branch{})
 
-	s.metadataService.UpdateCache(Cache{Branches: branches})
+	s.metadataService.UpdateCache(metadata.Cache{Branches: branches})
 }
 
 func (s *StackService) FindTrunk(node *StackNode) *StackNode {
@@ -89,8 +91,8 @@ func (s *StackService) FindTrunk(node *StackNode) *StackNode {
 	return s.FindTrunk(node.Parent)
 }
 
-func bfs(node *StackNode, arr []Branch) []Branch {
-	branch := Branch{
+func bfs(node *StackNode, arr []metadata.Branch) []metadata.Branch {
+	branch := metadata.Branch{
 		Name:                 node.Name,
 		BranchRevision:       node.RefSha,
 		ParentBranchName:     node.ParentBranch,

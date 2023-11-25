@@ -5,6 +5,7 @@ import (
 
 	"github.com/underwoo16/git-stacks/colors"
 	"github.com/underwoo16/git-stacks/git"
+	"github.com/underwoo16/git-stacks/metadata"
 	"github.com/underwoo16/git-stacks/queue"
 	"github.com/underwoo16/git-stacks/stacks"
 )
@@ -15,7 +16,7 @@ import (
 type PushCommand struct {
 	GitService      git.GitService
 	StackService    *stacks.StackService
-	MetadataService *stacks.MetadataService
+	MetadataService metadata.MetadataService
 }
 
 func (pc *PushCommand) Run(args []string) {
