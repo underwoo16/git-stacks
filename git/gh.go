@@ -2,10 +2,9 @@ package git
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"os/exec"
-
-	"github.com/underwoo16/git-stacks/utils"
 )
 
 type GitHubService interface {
@@ -31,11 +30,17 @@ func NewGitHubService() *gitHubService {
 
 func (gh *gitHubService) GetPullRequests() []PullRequest {
 	out, err := exec.Command("gh", "pr", "list", "--author", "@me", "--json", "number,baseRefName,headRefName,url").Output()
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	pullRequests := []PullRequest{}
 	err = json.Unmarshal(out, &pullRequests)
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 	return pullRequests
 }
 
@@ -46,5 +51,8 @@ func (gh *gitHubService) CreatePullRequest(baseBranch string, headBranch string)
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
 	err := cmd.Run()
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }

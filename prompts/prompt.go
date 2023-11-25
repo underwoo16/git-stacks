@@ -1,10 +1,11 @@
 package prompts
 
 import (
+	"fmt"
+	"os"
 	"strings"
 
 	"github.com/manifoldco/promptui"
-	"github.com/underwoo16/git-stacks/utils"
 )
 
 func PromptUser(items []string, label string, templates *promptui.SelectTemplates) string {
@@ -25,7 +26,10 @@ func PromptUser(items []string, label string, templates *promptui.SelectTemplate
 	}
 
 	i, _, err := prompt.Run()
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	return items[i]
 }

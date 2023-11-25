@@ -63,7 +63,10 @@ func (s *stackService) getStacks() []*StackNode {
 	var existingStacks []*StackNode
 	stacksPath := fmt.Sprintf("%s/refs/stacks", s.gitService.DirectoryPath())
 	err := filepath.Walk(stacksPath, func(path string, info os.FileInfo, err error) error {
-		utils.CheckError(err)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 
 		if info.IsDir() {
 			return nil
@@ -76,7 +79,10 @@ func (s *stackService) getStacks() []*StackNode {
 
 		return nil
 	})
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	return existingStacks
 }

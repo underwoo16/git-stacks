@@ -3,6 +3,7 @@ package metadata
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/underwoo16/git-stacks/git"
 	"github.com/underwoo16/git-stacks/utils"
@@ -58,7 +59,10 @@ func (m *metadataService) ConfigExists() bool {
 
 func (m *metadataService) UpdateConfig(config Config) {
 	b, err := json.Marshal(config)
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	configPath := fmt.Sprintf("%s/.stacks_config", m.gitService.DirectoryPath())
 	utils.WriteByteArrayToFile(b, configPath)
@@ -76,7 +80,11 @@ func (m *metadataService) GetConfig() Config {
 	ba := utils.ReadFileToByteArray(configPath)
 
 	var config Config
-	utils.CheckError(json.Unmarshal(ba, &config))
+	err := json.Unmarshal(ba, &config)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	return config
 }
@@ -98,14 +106,21 @@ func (m *metadataService) GetCache() Cache {
 	cachePath := fmt.Sprintf("%s/.stacks_cache", m.gitService.DirectoryPath())
 	ba := utils.ReadFileToByteArray(cachePath)
 	var cache Cache
-	utils.CheckError(json.Unmarshal(ba, &cache))
+	err := json.Unmarshal(ba, &cache)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	return cache
 }
 
 func (m *metadataService) UpdateCache(cache Cache) {
 	b, err := json.Marshal(cache)
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	cachePath := fmt.Sprintf("%s/.stacks_cache", m.gitService.DirectoryPath())
 	utils.WriteByteArrayToFile(b, cachePath)
@@ -114,7 +129,10 @@ func (m *metadataService) UpdateCache(cache Cache) {
 func (m *metadataService) StoreContinueInfo(branch string, branches []string) {
 	continueInfo := ContinueInfo{ContinueBranch: branch, Branches: branches}
 	b, err := json.Marshal(continueInfo)
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	continePath := fmt.Sprintf("%s/.stacks_continue", m.gitService.DirectoryPath())
 	utils.WriteByteArrayToFile(b, continePath)
@@ -129,7 +147,11 @@ func (m *metadataService) GetContinueInfo() ContinueInfo {
 	continePath := fmt.Sprintf("%s/.stacks_continue", m.gitService.DirectoryPath())
 	ba := utils.ReadFileToByteArray(continePath)
 	var continueInfo ContinueInfo
-	utils.CheckError(json.Unmarshal(ba, &continueInfo))
+	err := json.Unmarshal(ba, &continueInfo)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	return continueInfo
 }

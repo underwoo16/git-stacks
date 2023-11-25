@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/underwoo16/git-stacks/colors"
-	"github.com/underwoo16/git-stacks/utils"
 )
 
 type GitService interface {
@@ -39,7 +38,11 @@ func NewGitService() *gitService {
 
 func (g *gitService) GetCurrentBranch() string {
 	out, err := exec.Command("git", "rev-parse", "--abbrev-ref", "HEAD").Output()
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
 	branchName := strings.TrimSpace(string(out))
 	return branchName
 }
@@ -50,36 +53,56 @@ func (g *gitService) GetCurrentSha() string {
 
 func (g *gitService) RevParse(ref string) string {
 	out, err := exec.Command("git", "rev-parse", ref).Output()
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
 	refSha := strings.TrimSpace(string(out))
 	return refSha
 }
 
 func (g *gitService) CreateHashObject(filepath string) string {
 	out, err := exec.Command("git", "hash-object", "-w", filepath).Output()
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
 	objectSha := strings.TrimSpace(string(out))
 	return objectSha
 }
 
 func (g *gitService) UpdateRef(ref string, sha string) {
 	_, err := exec.Command("git", "update-ref", ref, sha).Output()
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
 
 func (g *gitService) CreateAndCheckoutBranch(branch string) {
 	_, err := exec.Command("git", "checkout", "-b", branch).Output()
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
 
 func (g *gitService) CheckoutBranch(branch string) {
 	_, err := exec.Command("git", "checkout", branch).Output()
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
 
 func (g *gitService) Show(thing string) string {
 	out, err := exec.Command("git", "show", thing).Output()
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 	result := strings.TrimSpace(string(out))
 	return result
 }
@@ -94,7 +117,10 @@ func (g *gitService) RebaseContinue() {
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	err := cmd.Run()
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
 
 func (g *gitService) Commit() {
@@ -102,7 +128,10 @@ func (g *gitService) Commit() {
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	err := cmd.Run()
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
 
 func (g *gitService) CommitAmend() {
@@ -110,12 +139,18 @@ func (g *gitService) CommitAmend() {
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	err := cmd.Run()
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
 
 func (g *gitService) BranchExists(branch string) bool {
 	out, err := exec.Command("git", "branch").Output()
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 	branches := string(out)
 	return strings.Contains(branches, branch)
 }
@@ -132,28 +167,43 @@ func (g *gitService) PassThrough(args []string) {
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	err := cmd.Run()
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
 
 func (g *gitService) LogBetween(from string, to string) string {
 	out, err := exec.Command("git", "log", "--oneline", "--no-decorate", fmt.Sprintf("%s..%s", from, to)).Output()
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 	return string(out)
 }
 
 func (g *gitService) PushBranch(branch string) {
 	_, err := exec.Command("git", "push", "-u", "origin", branch).Output()
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
 
 func (g *gitService) ForcePushBranch(branch string) {
 	_, err := exec.Command("git", "push", "-f", "-u", "origin", branch).Output()
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
 
 func (g *gitService) DirectoryPath() string {
 	out, err := exec.Command("git", "rev-parse", "--show-toplevel").Output()
-	utils.CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	return fmt.Sprintf("%s/.git", strings.TrimSpace(string(out)))
 }

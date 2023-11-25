@@ -16,7 +16,10 @@ func FileExists(dirPath string) bool {
 
 func RemoveFile(dirPath string) {
 	err := os.Remove(dirPath)
-	CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
 
 func CreateFile(dirPath string) *os.File {
@@ -38,12 +41,18 @@ func WriteToFile(filePath string, content string) {
 	defer file.Close()
 
 	_, err = fmt.Fprint(file, content)
-	CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
 
 func ReadLine(filePath string) string {
 	file, err := os.Open(filePath)
-	CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	defer file.Close()
 
@@ -51,17 +60,28 @@ func ReadLine(filePath string) string {
 	scanner.Scan()
 
 	result := scanner.Text()
-	CheckError(scanner.Err())
+	if err := scanner.Err(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	return result
 }
 
 func ReadFileToByteArray(filePath string) []byte {
 	b, err := os.ReadFile(filePath)
-	CheckError(err)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
 	return b
 }
 
 func WriteByteArrayToFile(b []byte, filePath string) {
-	os.WriteFile(filePath, b, 0644)
+	err := os.WriteFile(filePath, b, 0644)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
