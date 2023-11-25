@@ -20,16 +20,24 @@ type StackNode struct {
 	ParentRefSha string
 }
 
-type StackService struct {
+type StackService interface {
+	GetGraph() *StackNode
+	CacheGraphToDisk(trunk *StackNode)
+	NeedsSync(stack *StackNode) bool
+	GetCurrentStackNode() *StackNode
+	CreateStack(name string, parent string, parentRefSha string)
+}
+
+type stackService struct {
 	gitService      git.GitService
 	metadataService metadata.MetadataService
 }
 
-func NewStackService(gitService git.GitService, metadataService metadata.MetadataService) *StackService {
-	return &StackService{gitService: gitService, metadataService: metadataService}
+func NewStackService(gitService git.GitService, metadataService metadata.MetadataService) *stackService {
+	return &stackService{gitService: gitService, metadataService: metadataService}
 }
 
-func (s *StackService) readStack(ref string) *StackNode {
+func (s *stackService) readStack(ref string) *StackNode {
 	out := s.gitService.Show(ref)
 	items := strings.Fields(out)
 	name := s.GetNameFromRef(ref)
@@ -42,16 +50,16 @@ func (s *StackService) readStack(ref string) *StackNode {
 	}
 }
 
-func (s *StackService) GetNameFromRef(ref string) string {
+func (s *stackService) GetNameFromRef(ref string) string {
 	ref = strings.Replace(ref, "refs/heads/", "", -1)
 	return strings.Replace(ref, "refs/stacks/", "", -1)
 }
 
-func (s *StackService) convertHeadToStack(ref string) string {
+func (s *stackService) convertHeadToStack(ref string) string {
 	return strings.Replace(ref, "refs/heads", "refs/stacks", -1)
 }
 
-func (s *StackService) getStacks() []*StackNode {
+func (s *stackService) getStacks() []*StackNode {
 	var existingStacks []*StackNode
 	stacksPath := fmt.Sprintf("%s/refs/stacks", s.gitService.DirectoryPath())
 	err := filepath.Walk(stacksPath, func(path string, info os.FileInfo, err error) error {
@@ -73,7 +81,7 @@ func (s *StackService) getStacks() []*StackNode {
 	return existingStacks
 }
 
-func (s *StackService) UpdateStack(stack *StackNode) {
+func (s *stackService) UpdateStack(stack *StackNode) {
 	tempFilePath := fmt.Sprintf("%s/temp-%s", s.gitService.DirectoryPath(), stack.Name)
 
 	hashObject := fmt.Sprintf("%s\n%s", stack.ParentBranch, stack.ParentRefSha)
@@ -88,7 +96,7 @@ func (s *StackService) UpdateStack(stack *StackNode) {
 	s.CacheGraphToDisk(stack)
 }
 
-func (s *StackService) CreateStack(name string, parentBranch string, parentRefSha string) {
+func (s *stackService) CreateStack(name string, parentBranch string, parentRefSha string) {
 	tempFilePath := fmt.Sprintf("%s/temp-%s", s.gitService.DirectoryPath(), name)
 
 	hashObject := fmt.Sprintf("%s\n%s", parentBranch, parentRefSha)
@@ -113,19 +121,19 @@ func (s *StackService) CreateStack(name string, parentBranch string, parentRefSh
 	s.gitService.CreateAndCheckoutBranch(name)
 }
 
-func (s *StackService) StackExists(ref string) bool {
+func (s *stackService) StackExists(ref string) bool {
 	name := s.GetNameFromRef(ref)
 	return utils.FileExists(fmt.Sprintf("%s/refs/stacks/%s", s.gitService.DirectoryPath(), name))
 }
 
-func (s *StackService) GetCurrentStackNode() *StackNode {
+func (s *stackService) GetCurrentStackNode() *StackNode {
 	currentBranch := s.gitService.GetCurrentBranch()
 
 	trunk := s.GetGraph()
 	return s.findStack(trunk, currentBranch)
 }
 
-func (s *StackService) findStack(node *StackNode, branch string) *StackNode {
+func (s *stackService) findStack(node *StackNode, branch string) *StackNode {
 	if node.Name == branch {
 		return node
 	}
@@ -139,7 +147,7 @@ func (s *StackService) findStack(node *StackNode, branch string) *StackNode {
 	return nil
 }
 
-func (s *StackService) NeedsSync(stack *StackNode) bool {
+func (s *stackService) NeedsSync(stack *StackNode) bool {
 	if stack.Parent == nil {
 		return false
 	}

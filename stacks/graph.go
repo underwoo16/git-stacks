@@ -2,7 +2,7 @@ package stacks
 
 import "github.com/underwoo16/git-stacks/metadata"
 
-func (s *StackService) GetGraph() *StackNode {
+func (s *stackService) GetGraph() *StackNode {
 	if s.metadataService.CacheExists() {
 		return s.GetGraphFromCache()
 	}
@@ -12,7 +12,7 @@ func (s *StackService) GetGraph() *StackNode {
 	return graph
 }
 
-func (s *StackService) GetGraphFromRefs() *StackNode {
+func (s *stackService) GetGraphFromRefs() *StackNode {
 	config := s.metadataService.GetConfig()
 
 	trunk := StackNode{
@@ -26,7 +26,7 @@ func (s *StackService) GetGraphFromRefs() *StackNode {
 	return s.BuildGraphIterative(&trunk, allStacks)
 }
 
-func (s *StackService) BuildGraphIterative(trunk *StackNode, allStacks []*StackNode) *StackNode {
+func (s *stackService) BuildGraphIterative(trunk *StackNode, allStacks []*StackNode) *StackNode {
 	stackMap := make(map[string]*StackNode)
 	for _, stack := range allStacks {
 		stackMap[stack.Name] = stack
@@ -43,7 +43,7 @@ func (s *StackService) BuildGraphIterative(trunk *StackNode, allStacks []*StackN
 	return trunk
 }
 
-func (s *StackService) GetGraphFromCache() *StackNode {
+func (s *stackService) GetGraphFromCache() *StackNode {
 	branches := s.metadataService.GetCache().Branches
 	stackMap := make(map[string]*StackNode)
 
@@ -76,14 +76,14 @@ func (s *StackService) GetGraphFromCache() *StackNode {
 	return trunk
 }
 
-func (s *StackService) CacheGraphToDisk(trunk *StackNode) {
+func (s *stackService) CacheGraphToDisk(trunk *StackNode) {
 	trunk = s.FindTrunk(trunk)
 	branches := bfs(trunk, []metadata.Branch{})
 
 	s.metadataService.UpdateCache(metadata.Cache{Branches: branches})
 }
 
-func (s *StackService) FindTrunk(node *StackNode) *StackNode {
+func (s *stackService) FindTrunk(node *StackNode) *StackNode {
 	if node.Parent == nil {
 		return node
 	}

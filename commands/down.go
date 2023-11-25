@@ -10,14 +10,14 @@ import (
 
 type DownCommand struct {
 	GitService   git.GitService
-	StackService *stacks.StackService
+	StackService stacks.StackService
 }
 
-func (dc *DownCommand) Run() {
-	currentNode := dc.StackService.GetCurrentStackNode()
+func (d *DownCommand) Run() {
+	currentNode := d.StackService.GetCurrentStackNode()
 
 	if currentNode == nil || currentNode.Parent == nil {
-		fmt.Printf("%s\n", colors.CurrentStack(dc.GitService.GetCurrentBranch()))
+		fmt.Printf("%s\n", colors.CurrentStack(d.GitService.GetCurrentBranch()))
 		fmt.Printf("Already at bottom of stack.\n")
 		return
 	}
@@ -26,6 +26,6 @@ func (dc *DownCommand) Run() {
 
 	fmt.Printf("%s <- %s\n", parentBranch, colors.OtherStack(currentNode.Name))
 
-	dc.GitService.CheckoutBranch(parentBranch)
+	d.GitService.CheckoutBranch(parentBranch)
 	fmt.Printf("Switched to %s.\n", colors.CurrentStack(parentBranch))
 }

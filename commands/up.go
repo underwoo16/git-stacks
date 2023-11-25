@@ -13,11 +13,11 @@ import (
 
 type UpCommand struct {
 	GitService   git.GitService
-	StackService *stacks.StackService
+	StackService stacks.StackService
 }
 
-func (uc *UpCommand) Run() {
-	currentNode := uc.StackService.GetCurrentStackNode()
+func (u *UpCommand) Run() {
+	currentNode := u.StackService.GetCurrentStackNode()
 	if currentNode == nil {
 		log.Fatal("Not on a known stack.")
 	}
@@ -29,7 +29,7 @@ func (uc *UpCommand) Run() {
 	}
 
 	if len(children) == 1 {
-		uc.switchToFrom(children[0].Name, currentNode.Name)
+		u.switchToFrom(children[0].Name, currentNode.Name)
 		return
 	}
 
@@ -39,13 +39,13 @@ func (uc *UpCommand) Run() {
 	}
 
 	r := prompts.PromptUser(branches, "Select child branch", branchPromptTemplate())
-	uc.switchToFrom(r, currentNode.Name)
+	u.switchToFrom(r, currentNode.Name)
 }
 
-func (uc *UpCommand) switchToFrom(to string, from string) {
+func (u *UpCommand) switchToFrom(to string, from string) {
 	fmt.Printf("%s -> %s\n", colors.OtherStack(from), to)
 
-	uc.GitService.CheckoutBranch(to)
+	u.GitService.CheckoutBranch(to)
 	fmt.Printf("Switched to %s.\n", colors.CurrentStack(to))
 }
 

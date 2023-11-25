@@ -12,37 +12,37 @@ import (
 
 type PrCommand struct {
 	GitService      git.GitService
-	StackService    *stacks.StackService
+	StackService    stacks.StackService
 	GitHubService   git.GitHubService
 	MetadataService metadata.MetadataService
 }
 
-func (pc *PrCommand) Run(args []string) {
-	pullRequests := pc.GitHubService.GetPullRequests()
-	currentStack := pc.StackService.GetCurrentStackNode()
+func (p *PrCommand) Run(args []string) {
+	pullRequests := p.GitHubService.GetPullRequests()
+	currentStack := p.StackService.GetCurrentStackNode()
 	if len(args) < 1 {
-		pc.GitService.Rebase(currentStack.ParentBranch, currentStack.Name)
-		pc.submitPullRequestForStack(currentStack, pullRequests)
+		p.GitService.Rebase(currentStack.ParentBranch, currentStack.Name)
+		p.submitPullRequestForStack(currentStack, pullRequests)
 
-		pc.GitService.CheckoutBranch(currentStack.Name)
+		p.GitService.CheckoutBranch(currentStack.Name)
 		return
 	}
 
 	if args[0] == "all" {
-		trunk := pc.StackService.GetGraph()
+		trunk := p.StackService.GetGraph()
 
 		syncCommand := &SyncCommand{
-			MetadataService: pc.MetadataService,
-			StackService:    pc.StackService,
-			GitService:      pc.GitService,
+			MetadataService: p.MetadataService,
+			StackService:    p.StackService,
+			GitService:      p.GitService,
 		}
 
 		syncCommand.Resync(trunk)
-		pc.StackService.CacheGraphToDisk(trunk)
+		p.StackService.CacheGraphToDisk(trunk)
 
-		pc.submitAllPullRequests(trunk, pullRequests)
+		p.submitAllPullRequests(trunk, pullRequests)
 
-		pc.GitService.CheckoutBranch(currentStack.Name)
+		p.GitService.CheckoutBranch(currentStack.Name)
 		return
 	}
 
@@ -50,7 +50,7 @@ func (pc *PrCommand) Run(args []string) {
 	fmt.Println("Invalid arguments")
 }
 
-func (pc *PrCommand) submitAllPullRequests(trunk *stacks.StackNode, pullRequests []git.PullRequest) {
+func (p *PrCommand) submitAllPullRequests(trunk *stacks.StackNode, pullRequests []git.PullRequest) {
 	prQueue := queue.New()
 	prQueue.Push(trunk)
 
@@ -61,7 +61,7 @@ func (pc *PrCommand) submitAllPullRequests(trunk *stacks.StackNode, pullRequests
 			prQueue.Push(child)
 		}
 
-		pc.submitPullRequestForStack(stack, pullRequests)
+		p.submitPullRequestForStack(stack, pullRequests)
 	}
 }
 

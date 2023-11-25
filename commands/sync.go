@@ -13,22 +13,22 @@ import (
 
 type SyncCommand struct {
 	MetadataService metadata.MetadataService
-	StackService    *stacks.StackService
+	StackService    stacks.StackService
 	GitService      git.GitService
 }
 
-func (sc *SyncCommand) Run() {
+func (s *SyncCommand) Run() {
 	fmt.Printf("Syncing stacks...\n")
 
-	currentBranch := sc.GitService.GetCurrentBranch()
-	trunk := sc.StackService.GetGraph()
-	sc.Resync(trunk)
-	sc.StackService.CacheGraphToDisk(trunk)
-	sc.GitService.CheckoutBranch(currentBranch)
+	currentBranch := s.GitService.GetCurrentBranch()
+	trunk := s.StackService.GetGraph()
+	s.Resync(trunk)
+	s.StackService.CacheGraphToDisk(trunk)
+	s.GitService.CheckoutBranch(currentBranch)
 }
 
 // TODO: move this method into StackService
-func (sc *SyncCommand) Resync(trunk *stacks.StackNode) {
+func (s *SyncCommand) Resync(trunk *stacks.StackNode) {
 	syncQueue := queue.New()
 	syncQueue.Push(trunk)
 
@@ -38,19 +38,19 @@ func (sc *SyncCommand) Resync(trunk *stacks.StackNode) {
 			syncQueue.Push(child)
 		}
 
-		sc.SyncStack(stack, syncQueue)
+		s.SyncStack(stack, syncQueue)
 	}
 }
 
 // TODO: move this method into StackService
-func (sc *SyncCommand) SyncStack(stack *stacks.StackNode, syncQueue *queue.Queue) {
-	if !sc.StackService.NeedsSync(stack) {
+func (s *SyncCommand) SyncStack(stack *stacks.StackNode, syncQueue *queue.Queue) {
+	if !s.StackService.NeedsSync(stack) {
 		return
 	}
 
 	fmt.Printf("Rebasing %s onto %s\n", colors.CurrentStack(stack.Name), colors.OtherStack(stack.ParentBranch))
 
-	err := sc.GitService.Rebase(stack.ParentBranch, stack.Name)
+	err := s.GitService.Rebase(stack.ParentBranch, stack.Name)
 	if err != nil {
 		fmt.Printf("'%s' rebase failed\n", stack.Name)
 		fmt.Printf("Resolve conflicts and run %s\n", colors.Yellow("git-stacks continue"))
@@ -60,12 +60,12 @@ func (sc *SyncCommand) SyncStack(stack *stacks.StackNode, syncQueue *queue.Queue
 		for !syncQueue.IsEmpty() {
 			branches = append(branches, syncQueue.Pop().(*stacks.StackNode).Name)
 		}
-		sc.MetadataService.StoreContinueInfo(stack.Name, branches)
+		s.MetadataService.StoreContinueInfo(stack.Name, branches)
 		os.Exit(1)
 	}
 
-	newParentSha := sc.GitService.RevParse(stack.ParentBranch)
-	newSha := sc.GitService.RevParse(stack.Name)
+	newParentSha := s.GitService.RevParse(stack.ParentBranch)
+	newSha := s.GitService.RevParse(stack.Name)
 	stack.RefSha = newSha
 	stack.ParentRefSha = newParentSha
 }

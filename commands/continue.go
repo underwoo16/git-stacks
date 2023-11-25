@@ -13,7 +13,7 @@ import (
 type ContinueCommand struct {
 	GitService      git.GitService
 	MetadataService metadata.MetadataService
-	StackService    *stacks.StackService
+	StackService    stacks.StackService
 }
 
 func (c *ContinueCommand) Run() {
