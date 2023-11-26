@@ -97,9 +97,10 @@ func (m *metadataService) CacheExists() bool {
 
 func (m *metadataService) GetCache() Cache {
 	if !m.CacheExists() {
-		// TODO: add trunk here at minimum
-		// could also build graph and populate it fully
-		cache := Cache{Branches: []Branch{}}
+		fmt.Println("Cache does not exist")
+		currentBranch := m.gitService.GetCurrentBranch()
+		branch := Branch{Name: currentBranch}
+		cache := Cache{Branches: []Branch{branch}}
 		m.UpdateCache(cache)
 		return cache
 	}
@@ -117,6 +118,7 @@ func (m *metadataService) GetCache() Cache {
 }
 
 func (m *metadataService) UpdateCache(cache Cache) {
+	fmt.Printf("Updating cache %+v\n", cache)
 	b, err := json.Marshal(cache)
 	if err != nil {
 		fmt.Println(err)
@@ -124,6 +126,8 @@ func (m *metadataService) UpdateCache(cache Cache) {
 	}
 
 	cachePath := fmt.Sprintf("%s/.stacks_cache", m.gitService.DirectoryPath())
+	fmt.Printf("Writing cache to %s\n", cachePath)
+	fmt.Printf("Cache: %+v\n", cache)
 	m.fileService.WriteByteArrayToFile(b, cachePath)
 }
 
