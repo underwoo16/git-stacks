@@ -104,6 +104,8 @@ func (s *stackService) UpdateStack(stack *StackNode) {
 }
 
 func (s *stackService) CreateStack(name string, parentBranch string, parentRefSha string) {
+	currentStack := s.GetCurrentStackNode()
+
 	tempFilePath := fmt.Sprintf("%s/temp-%s", s.gitService.DirectoryPath(), name)
 
 	hashObject := fmt.Sprintf("%s\n%s", parentBranch, parentRefSha)
@@ -115,7 +117,8 @@ func (s *stackService) CreateStack(name string, parentBranch string, parentRefSh
 	newRef := fmt.Sprintf("refs/stacks/%s", name)
 	s.gitService.UpdateRef(newRef, objectSha)
 
-	currentStack := s.GetCurrentStackNode()
+	s.gitService.CreateAndCheckoutBranch(name)
+
 	currentStack.Children = append(currentStack.Children, &StackNode{
 		Name:         name,
 		ParentBranch: parentBranch,
@@ -124,8 +127,6 @@ func (s *stackService) CreateStack(name string, parentBranch string, parentRefSh
 	})
 
 	s.CacheGraphToDisk(currentStack)
-
-	s.gitService.CreateAndCheckoutBranch(name)
 }
 
 func (s *stackService) StackExists(ref string) bool {

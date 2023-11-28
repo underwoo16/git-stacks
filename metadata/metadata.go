@@ -118,7 +118,6 @@ func (m *metadataService) GetCache() Cache {
 }
 
 func (m *metadataService) UpdateCache(cache Cache) {
-	fmt.Printf("Updating cache %+v\n", cache)
 	b, err := json.Marshal(cache)
 	if err != nil {
 		fmt.Println(err)
@@ -126,8 +125,6 @@ func (m *metadataService) UpdateCache(cache Cache) {
 	}
 
 	cachePath := fmt.Sprintf("%s/.stacks_cache", m.gitService.DirectoryPath())
-	fmt.Printf("Writing cache to %s\n", cachePath)
-	fmt.Printf("Cache: %+v\n", cache)
 	m.fileService.WriteByteArrayToFile(b, cachePath)
 }
 
