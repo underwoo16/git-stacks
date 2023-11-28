@@ -26,7 +26,11 @@ gs sync
 gs pr
 ```
 
+* requires gh cli to be installed and authenticated
+
 #### Create pull requests for each stack
 ```cli
 gs pr all
 ```
+
+* requires gh cli to be installed and authenticated
