@@ -1,62 +1,55 @@
-package queue
+package queue_test
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/underwoo16/git-stacks/queue"
+)
 
 func TestIsEmpty(t *testing.T) {
-	q := New()
-	if !q.IsEmpty() {
-		t.Error("Queue should be empty")
-	}
+	q := queue.New()
+
+	assert.True(t, q.IsEmpty())
 
 	q.Push(1)
-	if q.IsEmpty() {
-		t.Error("Queue should not be empty")
-	}
+
+	assert.False(t, q.IsEmpty())
 
 	q.Pop()
-	if !q.IsEmpty() {
-		t.Error("Queue should be empty")
-	}
+
+	assert.True(t, q.IsEmpty())
 }
 
 func TestPush(t *testing.T) {
-	q := New()
+	q := queue.New()
 	q.Push(1)
-	if q.Size() != 1 {
-		t.Error("Queue should have size 1")
-	}
+
+	assert.Equal(t, 1, q.Size())
 
 	q.Push(2)
-	if q.Size() != 2 {
-		t.Error("Queue should have size 2")
-	}
+	assert.Equal(t, 2, q.Size())
 
-	if q.Peek() != 1 {
-		t.Error("Queue peek should be 1")
-	}
+	assert.Equal(t, 1, q.Peek())
+}
+
+func New() {
+	panic("unimplemented")
 }
 
 func TestPop(t *testing.T) {
-	q := New()
+	q := queue.New()
 	q.Push(1)
 	q.Push(2)
 	q.Push(3)
 
-	if q.Pop() != 1 {
-		t.Error("Queue pop should be 1")
-	}
-
-	if q.Pop() != 2 {
-		t.Error("Queue pop should be 2")
-	}
-
-	if q.Pop() != 3 {
-		t.Error("Queue pop should be 3")
-	}
+	assert.Equal(t, 1, q.Pop())
+	assert.Equal(t, 2, q.Pop())
+	assert.Equal(t, 3, q.Pop())
 }
 
 func TestSize(t *testing.T) {
-	q := New()
+	q := queue.New()
 	q.Push(1)
 	if q.Size() != 1 {
 		t.Error("Queue should have size 1")
@@ -79,7 +72,7 @@ func TestSize(t *testing.T) {
 }
 
 func TestClear(t *testing.T) {
-	q := New()
+	q := queue.New()
 	q.Push(1)
 	q.Push(2)
 	q.Push(3)
@@ -91,7 +84,7 @@ func TestClear(t *testing.T) {
 }
 
 func TestPeek(t *testing.T) {
-	q := New()
+	q := queue.New()
 	q.Push(1)
 	q.Push(2)
 	q.Push(3)
