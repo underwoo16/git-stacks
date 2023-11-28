@@ -14,9 +14,8 @@ var vertical = "│"
 var horizontal = "─"
 var spacer = "  "
 
-// TODO: use different symbols for current stack and other stacks
-var circle = "◯"
-var dot = "◉"
+var circle = "◌"
+var dot = "●"
 
 var endBranch = "┘"
 var horizBranch = "├"
@@ -75,7 +74,7 @@ func (s *ShowCommand) writeStackLabel(sb *strings.Builder, node *stacks.StackNod
 	}
 
 	if s.StackService.NeedsSync(node) {
-		nodeSuffix += " (needs sync)"
+		nodeSuffix += " (needs rebase)"
 	}
 
 	stackLabel := fmt.Sprintf("%s %s\n", node.Name, nodeSuffix)
