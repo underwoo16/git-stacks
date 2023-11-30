@@ -33,9 +33,27 @@ func (_m *MockFileService) CreateFile(dirPath string) *os.File {
 	return r0
 }
 
-// FileExists provides a mock function with given fields: dirPath
-func (_m *MockFileService) FileExists(dirPath string) bool {
+// DirExists provides a mock function with given fields: dirPath
+func (_m *MockFileService) DirExists(dirPath string) bool {
 	ret := _m.Called(dirPath)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DirExists")
+	}
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(string) bool); ok {
+		r0 = rf(dirPath)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	return r0
+}
+
+// FileExists provides a mock function with given fields: filePath
+func (_m *MockFileService) FileExists(filePath string) bool {
+	ret := _m.Called(filePath)
 
 	if len(ret) == 0 {
 		panic("no return value specified for FileExists")
@@ -43,7 +61,7 @@ func (_m *MockFileService) FileExists(dirPath string) bool {
 
 	var r0 bool
 	if rf, ok := ret.Get(0).(func(string) bool); ok {
-		r0 = rf(dirPath)
+		r0 = rf(filePath)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
