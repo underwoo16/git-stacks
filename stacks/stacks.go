@@ -56,10 +56,6 @@ func (s *stackService) GetNameFromRef(ref string) string {
 	return strings.Replace(ref, "refs/stacks/", "", -1)
 }
 
-func (s *stackService) convertHeadToStack(ref string) string {
-	return strings.Replace(ref, "refs/heads", "refs/stacks", -1)
-}
-
 func (s *stackService) getStacks() []*StackNode {
 	var existingStacks []*StackNode
 
