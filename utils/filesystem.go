@@ -7,7 +7,8 @@ import (
 )
 
 type FileService interface {
-	FileExists(dirPath string) bool
+	FileExists(filePath string) bool
+	DirExists(dirPath string) bool
 	RemoveFile(dirPath string)
 	CreateFile(dirPath string) *os.File
 	WriteToFile(filePath string, content string)
@@ -22,12 +23,20 @@ func NewFileService() *fileService {
 	return &fileService{}
 }
 
-func (f *fileService) FileExists(dirPath string) bool {
-	info, err := os.Stat(dirPath)
+func (f *fileService) FileExists(filePath string) bool {
+	info, err := os.Stat(filePath)
 	if os.IsNotExist(err) {
 		return false
 	}
 	return !info.IsDir()
+}
+
+func (f *fileService) DirExists(dirPath string) bool {
+	info, err := os.Stat(dirPath)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return info.IsDir()
 }
 
 func (f *fileService) RemoveFile(dirPath string) {

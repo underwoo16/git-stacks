@@ -62,7 +62,12 @@ func (s *stackService) convertHeadToStack(ref string) string {
 
 func (s *stackService) getStacks() []*StackNode {
 	var existingStacks []*StackNode
+
 	stacksPath := fmt.Sprintf("%s/refs/stacks", s.gitService.DirectoryPath())
+	if !s.fileService.FileExists(stacksPath) {
+		return existingStacks
+	}
+
 	err := filepath.Walk(stacksPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			fmt.Println(err)
@@ -80,6 +85,7 @@ func (s *stackService) getStacks() []*StackNode {
 
 		return nil
 	})
+
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
