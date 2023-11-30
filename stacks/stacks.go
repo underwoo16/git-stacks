@@ -95,7 +95,8 @@ func (s *stackService) getStacks() []*StackNode {
 }
 
 func (s *stackService) UpdateStack(stack *StackNode) {
-	tempFilePath := fmt.Sprintf("%s/temp-%s", s.gitService.DirectoryPath(), stack.Name)
+	tempFileName := strings.ReplaceAll(stack.Name, "/", "-")
+	tempFilePath := fmt.Sprintf("%s/temp-%s", s.gitService.DirectoryPath(), tempFileName)
 
 	hashObject := fmt.Sprintf("%s\n%s", stack.ParentBranch, stack.ParentRefSha)
 	s.fileService.WriteToFile(tempFilePath, hashObject)
@@ -112,7 +113,8 @@ func (s *stackService) UpdateStack(stack *StackNode) {
 func (s *stackService) CreateStack(name string, parentBranch string, parentRefSha string) {
 	currentStack := s.GetCurrentStackNode()
 
-	tempFilePath := fmt.Sprintf("%s/temp-%s", s.gitService.DirectoryPath(), name)
+	tempFileName := strings.ReplaceAll(name, "/", "-")
+	tempFilePath := fmt.Sprintf("%s/temp-%s", s.gitService.DirectoryPath(), tempFileName)
 
 	hashObject := fmt.Sprintf("%s\n%s", parentBranch, parentRefSha)
 	s.fileService.WriteToFile(tempFilePath, hashObject)
