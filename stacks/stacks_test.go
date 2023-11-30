@@ -54,21 +54,21 @@ func TestGetCurrentStackNode(t *testing.T) {
 	})
 	mockMetadataService.On("GetCache").Return(metadata.Cache{
 		Branches: []metadata.Branch{
-			metadata.Branch{
+			{
 				Name:                 "develop",
 				BranchRevision:       "1234567890",
 				ParentBranchName:     "",
 				ParentBranchRevision: "",
 				Children:             []string{"feature/branch"},
 			},
-			metadata.Branch{
+			{
 				Name:                 "feature/branch",
 				BranchRevision:       "1112131415",
 				ParentBranchName:     "develop",
 				ParentBranchRevision: "0987654321",
 				Children:             []string{"feature/branch/2"},
 			},
-			metadata.Branch{
+			{
 				Name:                 "feature/branch/2",
 				BranchRevision:       "1617181920",
 				ParentBranchName:     "feature/branch",
