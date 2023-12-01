@@ -6,8 +6,10 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/underwoo16/git-stacks/colors"
 	"github.com/underwoo16/git-stacks/git"
 	"github.com/underwoo16/git-stacks/metadata"
+	"github.com/underwoo16/git-stacks/queue"
 	"github.com/underwoo16/git-stacks/utils"
 )
 
@@ -26,6 +28,8 @@ type StackService interface {
 	NeedsSync(stack *StackNode) bool
 	GetCurrentStackNode() *StackNode
 	CreateStack(name string, parent string, parentRefSha string)
+	SyncStack(stack *StackNode, syncQueue *queue.Queue)
+	Resync(trunk *StackNode)
 }
 
 type stackService struct {
@@ -166,4 +170,49 @@ func (s *stackService) NeedsSync(stack *StackNode) bool {
 
 	actualParentSha := s.gitService.RevParse(stack.ParentBranch)
 	return stack.ParentRefSha != actualParentSha
+}
+
+func (s *stackService) SyncStack(stack *StackNode, syncQueue *queue.Queue) {
+	if !s.NeedsSync(stack) {
+		return
+	}
+
+	fmt.Printf("Rebasing %s onto %s\n", colors.CurrentStack(stack.Name), colors.OtherStack(stack.ParentBranch))
+
+	err := s.gitService.Rebase(stack.ParentBranch, stack.Name)
+	if err != nil {
+		fmt.Printf("'%s' rebase failed\n", stack.Name)
+		fmt.Printf("Resolve conflicts and run %s\n", colors.Yellow("git-stacks continue"))
+		fmt.Printf("Alternatively, run %s to abort the rebase\n", colors.Yellow("git-stacks rebase --abort"))
+
+		var branches []string
+		for !syncQueue.IsEmpty() {
+			branches = append(branches, syncQueue.Pop().(*StackNode).Name)
+		}
+		s.metadataService.StoreContinueInfo(stack.Name, branches)
+		os.Exit(1)
+	}
+
+	newParentSha := s.gitService.RevParse(stack.ParentBranch)
+	newSha := s.gitService.RevParse(stack.Name)
+	stack.RefSha = newSha
+	stack.ParentRefSha = newParentSha
+
+	s.CacheGraphToDisk(stack)
+}
+
+func (s *stackService) Resync(trunk *StackNode) {
+	syncQueue := queue.New()
+	syncQueue.Push(trunk)
+
+	for !syncQueue.IsEmpty() {
+		stack := syncQueue.Pop().(*StackNode)
+		for _, child := range stack.Children {
+			syncQueue.Push(child)
+		}
+
+		s.SyncStack(stack, syncQueue)
+	}
+
+	s.CacheGraphToDisk(trunk)
 }
