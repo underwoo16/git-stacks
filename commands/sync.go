@@ -2,23 +2,13 @@ package commands
 
 import (
 	"fmt"
-
-	"github.com/underwoo16/git-stacks/git"
-	"github.com/underwoo16/git-stacks/metadata"
-	"github.com/underwoo16/git-stacks/stacks"
 )
 
-type SyncCommand struct {
-	MetadataService metadata.MetadataService
-	StackService    stacks.StackService
-	GitService      git.GitService
-}
-
-func (s *SyncCommand) Run() {
+func (c *commandRunner) Sync() {
 	fmt.Printf("Syncing stacks...\n")
 
-	currentBranch := s.GitService.GetCurrentBranch()
-	trunk := s.StackService.GetGraph()
-	s.StackService.Resync(trunk)
-	s.GitService.CheckoutBranch(currentBranch)
+	currentBranch := c.gitService.GetCurrentBranch()
+	trunk := c.stackService.GetGraph()
+	c.stackService.Resync(trunk)
+	c.gitService.CheckoutBranch(currentBranch)
 }

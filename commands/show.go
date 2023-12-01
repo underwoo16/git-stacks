@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/underwoo16/git-stacks/colors"
-	"github.com/underwoo16/git-stacks/git"
 	"github.com/underwoo16/git-stacks/stacks"
 )
 
@@ -21,14 +20,9 @@ var endBranch = "┘"
 var horizBranch = "├"
 var vertBranch = "┴"
 
-type ShowCommand struct {
-	GitService   git.GitService
-	StackService stacks.StackService
-}
-
-func (s *ShowCommand) Run() {
-	currentBranch := s.GitService.GetCurrentBranch()
-	trunk := s.StackService.GetGraph()
+func (c *commandRunner) Show() {
+	currentBranch := c.gitService.GetCurrentBranch()
+	trunk := c.stackService.GetGraph()
 
 	depthStack, colMap := bfs(trunk, 0, []*stacks.StackNode{}, map[string]int{})
 
@@ -36,16 +30,16 @@ func (s *ShowCommand) Run() {
 	for depth := len(depthStack) - 1; depth >= 0; depth-- {
 		node := depthStack[depth]
 		col := colMap[node.Name]
-		logBetween := s.GitService.LogBetween(node.ParentBranch, node.Name)
+		logBetween := c.gitService.LogBetween(node.ParentBranch, node.Name)
 
-		s.writeRow(&sb, col)
-		s.writeStackLabel(&sb, node, currentBranch)
+		c.writeRow(&sb, col)
+		c.writeStackLabel(&sb, node, currentBranch)
 
 		if depth > 0 {
-			s.writeColumns(&sb, col, logBetween)
+			c.writeColumns(&sb, col, logBetween)
 
-			if col > 0 && s.isLowestChild(node, depth, depthStack) {
-				s.writeConnectingBranches(&sb, col)
+			if col > 0 && c.isLowestChild(node, depth, depthStack) {
+				c.writeConnectingBranches(&sb, col)
 			}
 		}
 	}
@@ -53,7 +47,7 @@ func (s *ShowCommand) Run() {
 	fmt.Print(sb.String())
 }
 
-func (s *ShowCommand) writeRow(sb *strings.Builder, col int) {
+func (c *commandRunner) writeRow(sb *strings.Builder, col int) {
 	if col > 0 {
 		sb.WriteString(vertical)
 		for i := 0; i < col; i++ {
@@ -65,7 +59,7 @@ func (s *ShowCommand) writeRow(sb *strings.Builder, col int) {
 	}
 }
 
-func (s *ShowCommand) writeStackLabel(sb *strings.Builder, node *stacks.StackNode, currentBranch string) {
+func (c *commandRunner) writeStackLabel(sb *strings.Builder, node *stacks.StackNode, currentBranch string) {
 	nodePrefix := circle
 	nodeSuffix := ""
 	if node.Name == currentBranch {
@@ -73,7 +67,7 @@ func (s *ShowCommand) writeStackLabel(sb *strings.Builder, node *stacks.StackNod
 		nodeSuffix = "*"
 	}
 
-	if s.StackService.NeedsSync(node) {
+	if c.stackService.NeedsSync(node) {
 		nodeSuffix += " (needs rebase)"
 	}
 
@@ -90,7 +84,7 @@ func (s *ShowCommand) writeStackLabel(sb *strings.Builder, node *stacks.StackNod
 // TODO: clean this up
 //
 //	maybe move splitting the logs to array in git package
-func (s *ShowCommand) writeColumns(sb *strings.Builder, col int, log string) {
+func (c *commandRunner) writeColumns(sb *strings.Builder, col int, log string) {
 	logs := strings.FieldsFunc(log, func(r rune) bool {
 		return r == '\n'
 	})
@@ -112,7 +106,7 @@ func (s *ShowCommand) writeColumns(sb *strings.Builder, col int, log string) {
 }
 
 // "├ ─ ─ ┴ ─ ─ ┘"
-func (s *ShowCommand) writeConnectingBranches(sb *strings.Builder, col int) {
+func (c *commandRunner) writeConnectingBranches(sb *strings.Builder, col int) {
 	sb.WriteString(horizBranch)
 	for i := 0; i < col; i++ {
 		sb.WriteString(horizontal + horizontal)
@@ -124,7 +118,7 @@ func (s *ShowCommand) writeConnectingBranches(sb *strings.Builder, col int) {
 	}
 }
 
-func (s *ShowCommand) isLowestChild(child *stacks.StackNode, depth int, arr []*stacks.StackNode) bool {
+func (c *commandRunner) isLowestChild(child *stacks.StackNode, depth int, arr []*stacks.StackNode) bool {
 	parent := child.Parent
 	if parent == nil {
 		return false

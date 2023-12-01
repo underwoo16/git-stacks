@@ -25,65 +25,6 @@ func main() {
 	metadataService := metadata.NewMetadataService(gitService, fileService)
 	stackService := stacks.NewStackService(gitService, metadataService, fileService)
 
-	switch args[0] {
-	case "continue":
-		cmd := commands.ContinueCommand{
-			GitService:      gitService,
-			MetadataService: metadataService,
-			StackService:    stackService,
-		}
-		cmd.Run()
-	case "stack":
-		cmd := commands.StackCommand{
-			GitService:      gitService,
-			MetadataService: metadataService,
-			StackService:    stackService,
-		}
-		cmd.Run(args[1:])
-	case "show":
-		cmd := commands.ShowCommand{
-			GitService:   gitService,
-			StackService: stackService,
-		}
-		cmd.Run()
-	case "down":
-		cmd := commands.DownCommand{
-			GitService:   gitService,
-			StackService: stackService,
-		}
-		cmd.Run()
-	case "up":
-		cmd := commands.UpCommand{
-			GitService:   gitService,
-			StackService: stackService,
-		}
-		cmd.Run()
-	case "sync":
-		cmd := commands.SyncCommand{
-			GitService:      gitService,
-			MetadataService: metadataService,
-			StackService:    stackService,
-		}
-		cmd.Run()
-	case "pr":
-		cmd := commands.PrCommand{
-			GitService:      gitService,
-			MetadataService: metadataService,
-			StackService:    stackService,
-			GitHubService:   gitHubService,
-		}
-		cmd.Run(args[1:])
-	case "push-stack":
-		cmd := commands.PushCommand{
-			GitService:      gitService,
-			MetadataService: metadataService,
-			StackService:    stackService,
-		}
-		cmd.Run(args[1:])
-	default:
-		cmd := commands.PassThroughCommand{
-			GitService: gitService,
-		}
-		cmd.Run(args)
-	}
+	cmdRunner := commands.NewCommandRunner(gitService, gitHubService, stackService, metadataService)
+	cmdRunner.Run(args)
 }

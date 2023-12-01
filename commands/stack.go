@@ -5,35 +5,27 @@ import (
 	"os"
 
 	"github.com/underwoo16/git-stacks/colors"
-	"github.com/underwoo16/git-stacks/git"
 	"github.com/underwoo16/git-stacks/metadata"
-	"github.com/underwoo16/git-stacks/stacks"
 )
 
-type StackCommand struct {
-	GitService      git.GitService
-	StackService    stacks.StackService
-	MetadataService metadata.MetadataService
-}
+func (c *commandRunner) Stack(args []string) {
+	parentBranch := c.gitService.GetCurrentBranch()
+	parentRefSha := c.gitService.GetCurrentSha()
 
-func (s *StackCommand) Run(args []string) {
-	parentBranch := s.GitService.GetCurrentBranch()
-	parentRefSha := s.GitService.GetCurrentSha()
-
-	if !s.MetadataService.ConfigExists() {
+	if !c.metadataService.ConfigExists() {
 		fmt.Println("No stacks found. Initializing...")
-		s.MetadataService.UpdateConfig(metadata.Config{Trunk: parentBranch})
+		c.metadataService.UpdateConfig(metadata.Config{Trunk: parentBranch})
 	}
 
 	stackName := stackNameFromArgs(args)
-	if s.GitService.BranchExists(stackName) {
+	if c.gitService.BranchExists(stackName) {
 		fmt.Printf("Branch '%s' already exists\n", stackName)
 		os.Exit(1)
 	}
 
 	fmt.Printf("Creating stack '%s'...\n", stackName)
 
-	s.StackService.CreateStack(stackName, parentBranch, parentRefSha)
+	c.stackService.CreateStack(stackName, parentBranch, parentRefSha)
 
 	fmt.Printf("Done! Switched to new stack '%s'\n", colors.CurrentStack(stackName))
 }
