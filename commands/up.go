@@ -16,6 +16,13 @@ type UpCommand struct {
 	StackService stacks.StackService
 }
 
+func NewUpCommand(gitService git.GitService, stackService stacks.StackService) *UpCommand {
+	return &UpCommand{
+		GitService:   gitService,
+		StackService: stackService,
+	}
+}
+
 func (u *UpCommand) Run() {
 	currentNode := u.StackService.GetCurrentStackNode()
 	if currentNode == nil {

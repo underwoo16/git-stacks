@@ -14,14 +14,24 @@ import (
 // TODO: check if branch is behind before pushing
 
 type PushCommand struct {
+	args            []string
 	GitService      git.GitService
-	StackService    stacks.StackService
 	MetadataService metadata.MetadataService
+	StackService    stacks.StackService
 }
 
-func (p *PushCommand) Run(args []string) {
+func NewPushCommand(args []string, gitService git.GitService, metadataService metadata.MetadataService, stackService stacks.StackService) *PushCommand {
+	return &PushCommand{
+		args:            args,
+		GitService:      gitService,
+		MetadataService: metadataService,
+		StackService:    stackService,
+	}
+}
+
+func (p *PushCommand) Run() {
 	currentStack := p.StackService.GetCurrentStackNode()
-	if len(args) < 1 {
+	if len(p.args) < 1 {
 
 		p.StackService.SyncStack(currentStack, queue.New())
 
@@ -30,7 +40,7 @@ func (p *PushCommand) Run(args []string) {
 		return
 	}
 
-	if args[0] == "all" {
+	if p.args[0] == "all" {
 		trunk := p.StackService.GetGraph()
 		p.StackService.Resync(trunk)
 

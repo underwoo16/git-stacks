@@ -8,12 +8,19 @@ import (
 	"github.com/underwoo16/git-stacks/stacks"
 )
 
-type DownCommand struct {
+type downCommand struct {
 	GitService   git.GitService
 	StackService stacks.StackService
 }
 
-func (d *DownCommand) Run() {
+func NewDownCommand(gitService git.GitService, stackService stacks.StackService) *downCommand {
+	return &downCommand{
+		GitService:   gitService,
+		StackService: stackService,
+	}
+}
+
+func (d *downCommand) Run() {
 	currentNode := d.StackService.GetCurrentStackNode()
 
 	if currentNode == nil || currentNode.Parent == nil {

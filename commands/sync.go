@@ -9,9 +9,17 @@ import (
 )
 
 type SyncCommand struct {
+	GitService      git.GitService
 	MetadataService metadata.MetadataService
 	StackService    stacks.StackService
-	GitService      git.GitService
+}
+
+func NewSyncCommand(gitService git.GitService, metadataService metadata.MetadataService, stackService stacks.StackService) *SyncCommand {
+	return &SyncCommand{
+		GitService:      gitService,
+		MetadataService: metadataService,
+		StackService:    stackService,
+	}
 }
 
 func (s *SyncCommand) Run() {

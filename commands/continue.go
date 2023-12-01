@@ -10,13 +10,21 @@ import (
 	"github.com/underwoo16/git-stacks/stacks"
 )
 
-type ContinueCommand struct {
+type continueCommand struct {
 	GitService      git.GitService
 	MetadataService metadata.MetadataService
 	StackService    stacks.StackService
 }
 
-func (c *ContinueCommand) Run() {
+func NewContinueCommand(gitService git.GitService, metadataService metadata.MetadataService, stackService stacks.StackService) *continueCommand {
+	return &continueCommand{
+		GitService:      gitService,
+		MetadataService: metadataService,
+		StackService:    stackService,
+	}
+}
+
+func (c *continueCommand) Run() {
 	if !c.MetadataService.ContinueInfoExists() {
 		log.Fatal("No continue info found")
 	}

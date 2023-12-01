@@ -11,17 +11,28 @@ import (
 )
 
 type PrCommand struct {
+	args            []string
 	GitService      git.GitService
-	StackService    stacks.StackService
 	GitHubService   git.GitHubService
 	MetadataService metadata.MetadataService
+	StackService    stacks.StackService
 }
 
-func (p *PrCommand) Run(args []string) {
+func NewPrCommand(args []string, gitService git.GitService, gitHubService git.GitHubService, metadataService metadata.MetadataService, stackService stacks.StackService) *PrCommand {
+	return &PrCommand{
+		args:            args,
+		GitService:      gitService,
+		GitHubService:   gitHubService,
+		MetadataService: metadataService,
+		StackService:    stackService,
+	}
+}
+
+func (p *PrCommand) Run() {
 	pullRequests := p.GitHubService.GetPullRequests()
 	currentStack := p.StackService.GetCurrentStackNode()
 
-	if len(args) < 1 {
+	if len(p.args) < 1 {
 		p.StackService.SyncStack(currentStack, queue.New())
 
 		p.submitPullRequestForStack(currentStack, pullRequests)
@@ -30,7 +41,7 @@ func (p *PrCommand) Run(args []string) {
 		return
 	}
 
-	if args[0] == "all" {
+	if p.args[0] == "all" {
 		trunk := p.StackService.GetGraph()
 		p.StackService.Resync(trunk)
 

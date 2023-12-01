@@ -11,12 +11,22 @@ import (
 )
 
 type StackCommand struct {
+	args            []string
 	GitService      git.GitService
-	StackService    stacks.StackService
 	MetadataService metadata.MetadataService
+	StackService    stacks.StackService
 }
 
-func (s *StackCommand) Run(args []string) {
+func NewStackCommand(args []string, gitService git.GitService, metadataService metadata.MetadataService, stackService stacks.StackService) *StackCommand {
+	return &StackCommand{
+		args:            args,
+		GitService:      gitService,
+		MetadataService: metadataService,
+		StackService:    stackService,
+	}
+}
+
+func (s *StackCommand) Run() {
 	parentBranch := s.GitService.GetCurrentBranch()
 	parentRefSha := s.GitService.GetCurrentSha()
 
@@ -25,7 +35,7 @@ func (s *StackCommand) Run(args []string) {
 		s.MetadataService.UpdateConfig(metadata.Config{Trunk: parentBranch})
 	}
 
-	stackName := stackNameFromArgs(args)
+	stackName := stackNameFromArgs(s.args)
 	if s.GitService.BranchExists(stackName) {
 		fmt.Printf("Branch '%s' already exists\n", stackName)
 		os.Exit(1)

@@ -26,6 +26,13 @@ type ShowCommand struct {
 	StackService stacks.StackService
 }
 
+func NewShowCommand(gitService git.GitService, stackService stacks.StackService) *ShowCommand {
+	return &ShowCommand{
+		GitService:   gitService,
+		StackService: stackService,
+	}
+}
+
 func (s *ShowCommand) Run() {
 	currentBranch := s.GitService.GetCurrentBranch()
 	trunk := s.StackService.GetGraph()
