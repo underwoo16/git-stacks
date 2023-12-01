@@ -4,45 +4,29 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/underwoo16/git-stacks/git"
-	"github.com/underwoo16/git-stacks/metadata"
 	"github.com/underwoo16/git-stacks/queue"
 	"github.com/underwoo16/git-stacks/stacks"
 )
 
-type continueCommand struct {
-	GitService      git.GitService
-	MetadataService metadata.MetadataService
-	StackService    stacks.StackService
-}
-
-func NewContinueCommand(gitService git.GitService, metadataService metadata.MetadataService, stackService stacks.StackService) *continueCommand {
-	return &continueCommand{
-		GitService:      gitService,
-		MetadataService: metadataService,
-		StackService:    stackService,
-	}
-}
-
-func (c *continueCommand) Run() {
-	if !c.MetadataService.ContinueInfoExists() {
+func (c *commandRunner) Continue() {
+	if !c.metadataService.ContinueInfoExists() {
 		log.Fatal("No continue info found")
 	}
 
 	fmt.Println("Continuing sync...")
-	continueInfo := c.MetadataService.GetContinueInfo()
+	continueInfo := c.metadataService.GetContinueInfo()
 
-	trunk := c.StackService.GetGraph()
+	trunk := c.stackService.GetGraph()
 	stackMap := make(map[string]*stacks.StackNode)
 	populateMap(trunk, stackMap)
 
 	fmt.Println("Continuing rebase...")
-	c.GitService.RebaseContinue()
+	c.gitService.RebaseContinue()
 
 	continueBanch := continueInfo.ContinueBranch
 	stack := stackMap[continueBanch]
-	stack.RefSha = c.GitService.RevParse(continueBanch)
-	stack.ParentRefSha = c.GitService.RevParse(stack.ParentBranch)
+	stack.RefSha = c.gitService.RevParse(continueBanch)
+	stack.ParentRefSha = c.gitService.RevParse(stack.ParentBranch)
 
 	fmt.Println("Syncing stacks...")
 	branches := continueInfo.Branches
@@ -64,13 +48,13 @@ func (c *continueCommand) Run() {
 			syncQueue.Push(child)
 		}
 
-		c.StackService.SyncStack(stack, syncQueue)
+		c.stackService.SyncStack(stack, syncQueue)
 	}
 
 	fmt.Println("Sync complete")
-	c.StackService.CacheGraphToDisk(trunk)
+	c.stackService.CacheGraphToDisk(trunk)
 
-	c.MetadataService.RemoveContinueInfo()
+	c.metadataService.RemoveContinueInfo()
 }
 
 func populateMap(stack *stacks.StackNode, stackMap map[string]*stacks.StackNode) {

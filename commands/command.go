@@ -6,10 +6,6 @@ import (
 	"github.com/underwoo16/git-stacks/stacks"
 )
 
-type Command interface {
-	Run()
-}
-
 type CommandRunner interface {
 	Run(args []string)
 }
@@ -31,27 +27,24 @@ func NewCommandRunner(gitService git.GitService, gitHubService git.GitHubService
 }
 
 func (c *commandRunner) Run(args []string) {
-	var cmd Command
 	switch args[0] {
 	case "continue":
-		cmd = NewContinueCommand(c.gitService, c.metadataService, c.stackService)
+		c.Continue()
 	case "stack":
-		cmd = NewStackCommand(args[1:], c.gitService, c.metadataService, c.stackService)
+		c.Stack(args[1:])
 	case "show":
-		cmd = NewShowCommand(c.gitService, c.stackService)
+		c.Show()
 	case "down":
-		cmd = NewDownCommand(c.gitService, c.stackService)
+		c.Down()
 	case "up":
-		cmd = NewUpCommand(c.gitService, c.stackService)
+		c.Up()
 	case "sync":
-		cmd = NewSyncCommand(c.gitService, c.metadataService, c.stackService)
+		c.Sync()
 	case "pr":
-		cmd = NewPrCommand(args[1:], c.gitService, c.gitHubService, c.metadataService, c.stackService)
+		c.PullRequest(args[1:])
 	case "push-stack":
-		cmd = NewPushCommand(args[1:], c.gitService, c.metadataService, c.stackService)
+		c.Push(args[1:])
 	default:
-		cmd = NewPassThroughCommand(args, c.gitService)
+		c.PassThrough(args)
 	}
-
-	cmd.Run()
 }

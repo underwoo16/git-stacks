@@ -6,25 +6,11 @@ import (
 
 	"github.com/manifoldco/promptui"
 	"github.com/underwoo16/git-stacks/colors"
-	"github.com/underwoo16/git-stacks/git"
 	"github.com/underwoo16/git-stacks/prompts"
-	"github.com/underwoo16/git-stacks/stacks"
 )
 
-type UpCommand struct {
-	GitService   git.GitService
-	StackService stacks.StackService
-}
-
-func NewUpCommand(gitService git.GitService, stackService stacks.StackService) *UpCommand {
-	return &UpCommand{
-		GitService:   gitService,
-		StackService: stackService,
-	}
-}
-
-func (u *UpCommand) Run() {
-	currentNode := u.StackService.GetCurrentStackNode()
+func (c *commandRunner) Up() {
+	currentNode := c.stackService.GetCurrentStackNode()
 	if currentNode == nil {
 		log.Fatal("Not on a known stack.")
 	}
@@ -36,7 +22,7 @@ func (u *UpCommand) Run() {
 	}
 
 	if len(children) == 1 {
-		u.switchToFrom(children[0].Name, currentNode.Name)
+		c.switchToFrom(children[0].Name, currentNode.Name)
 		return
 	}
 
@@ -46,13 +32,13 @@ func (u *UpCommand) Run() {
 	}
 
 	r := prompts.PromptUser(branches, "Select child branch", branchPromptTemplate())
-	u.switchToFrom(r, currentNode.Name)
+	c.switchToFrom(r, currentNode.Name)
 }
 
-func (u *UpCommand) switchToFrom(to string, from string) {
+func (c *commandRunner) switchToFrom(to string, from string) {
 	fmt.Printf("%s -> %s\n", colors.OtherStack(from), to)
 
-	u.GitService.CheckoutBranch(to)
+	c.gitService.CheckoutBranch(to)
 	fmt.Printf("Switched to %s.\n", colors.CurrentStack(to))
 }
 

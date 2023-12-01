@@ -4,8 +4,6 @@ import (
 	"fmt"
 
 	"github.com/underwoo16/git-stacks/colors"
-	"github.com/underwoo16/git-stacks/git"
-	"github.com/underwoo16/git-stacks/metadata"
 	"github.com/underwoo16/git-stacks/queue"
 	"github.com/underwoo16/git-stacks/stacks"
 )
@@ -13,40 +11,24 @@ import (
 // TODO: check if branch is ahead before pushing
 // TODO: check if branch is behind before pushing
 
-type PushCommand struct {
-	args            []string
-	GitService      git.GitService
-	MetadataService metadata.MetadataService
-	StackService    stacks.StackService
-}
+func (c *commandRunner) Push(args []string) {
+	currentStack := c.stackService.GetCurrentStackNode()
+	if len(args) < 1 {
 
-func NewPushCommand(args []string, gitService git.GitService, metadataService metadata.MetadataService, stackService stacks.StackService) *PushCommand {
-	return &PushCommand{
-		args:            args,
-		GitService:      gitService,
-		MetadataService: metadataService,
-		StackService:    stackService,
-	}
-}
-
-func (p *PushCommand) Run() {
-	currentStack := p.StackService.GetCurrentStackNode()
-	if len(p.args) < 1 {
-
-		p.StackService.SyncStack(currentStack, queue.New())
+		c.stackService.SyncStack(currentStack, queue.New())
 
 		fmt.Printf("Pushing %s\n", colors.CurrentStack(currentStack.Name))
-		p.GitService.ForcePushBranch(currentStack.Name)
+		c.gitService.ForcePushBranch(currentStack.Name)
 		return
 	}
 
-	if p.args[0] == "all" {
-		trunk := p.StackService.GetGraph()
-		p.StackService.Resync(trunk)
+	if args[0] == "all" {
+		trunk := c.stackService.GetGraph()
+		c.stackService.Resync(trunk)
 
-		p.pushAllStacks(trunk)
+		c.pushAllStacks(trunk)
 
-		p.GitService.CheckoutBranch(currentStack.Name)
+		c.gitService.CheckoutBranch(currentStack.Name)
 		return
 	}
 
@@ -54,7 +36,7 @@ func (p *PushCommand) Run() {
 	fmt.Println("Invalid arguments")
 }
 
-func (p *PushCommand) pushAllStacks(trunk *stacks.StackNode) {
+func (c *commandRunner) pushAllStacks(trunk *stacks.StackNode) {
 	pushQueue := queue.New()
 	pushQueue.Push(trunk)
 
@@ -70,6 +52,6 @@ func (p *PushCommand) pushAllStacks(trunk *stacks.StackNode) {
 		}
 
 		fmt.Printf("Pushing %s\n", colors.CurrentStack(stack.Name))
-		p.GitService.ForcePushBranch(stack.Name)
+		c.gitService.ForcePushBranch(stack.Name)
 	}
 }
