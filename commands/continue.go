@@ -50,18 +50,13 @@ func (c *ContinueCommand) Run() {
 		syncQueue.Push(stack)
 	}
 
-	syncCommand := SyncCommand{
-		GitService:      c.GitService,
-		MetadataService: c.MetadataService,
-		StackService:    c.StackService,
-	}
 	for !syncQueue.IsEmpty() {
 		stack := syncQueue.Pop().(*stacks.StackNode)
 		for _, child := range stack.Children {
 			syncQueue.Push(child)
 		}
 
-		syncCommand.SyncStack(stack, syncQueue)
+		c.StackService.SyncStack(stack, syncQueue)
 	}
 
 	fmt.Println("Sync complete")

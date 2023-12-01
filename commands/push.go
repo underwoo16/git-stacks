@@ -22,37 +22,17 @@ type PushCommand struct {
 func (p *PushCommand) Run(args []string) {
 	currentStack := p.StackService.GetCurrentStackNode()
 	if len(args) < 1 {
-		if p.StackService.NeedsSync(currentStack) {
-			fmt.Printf("Rebasing %s onto %s\n", colors.CurrentStack(currentStack.Name), colors.OtherStack(currentStack.ParentBranch))
-			p.GitService.Rebase(currentStack.ParentBranch, currentStack.Name)
 
-			// TODO: consolidate this logic - it is repeated in several places
-			newParentSha := p.GitService.RevParse(currentStack.ParentBranch)
-			newSha := p.GitService.RevParse(currentStack.Name)
-			currentStack.RefSha = newSha
-			currentStack.ParentRefSha = newParentSha
-			p.StackService.CacheGraphToDisk(currentStack)
-
-			fmt.Printf("Pushing %s\n", colors.CurrentStack(currentStack.Name))
-			p.GitService.ForcePushBranch(currentStack.Name)
-			return
-		}
+		p.StackService.SyncStack(currentStack, queue.New())
 
 		fmt.Printf("Pushing %s\n", colors.CurrentStack(currentStack.Name))
-		p.GitService.PushBranch(currentStack.Name)
+		p.GitService.ForcePushBranch(currentStack.Name)
 		return
 	}
 
 	if args[0] == "all" {
 		trunk := p.StackService.GetGraph()
-
-		syncCommand := &SyncCommand{
-			MetadataService: p.MetadataService,
-			StackService:    p.StackService,
-			GitService:      p.GitService,
-		}
-		syncCommand.Resync(trunk)
-		p.StackService.CacheGraphToDisk(trunk)
+		p.StackService.Resync(trunk)
 
 		p.pushAllStacks(trunk)
 

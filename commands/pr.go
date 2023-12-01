@@ -20,25 +20,19 @@ type PrCommand struct {
 func (p *PrCommand) Run(args []string) {
 	pullRequests := p.GitHubService.GetPullRequests()
 	currentStack := p.StackService.GetCurrentStackNode()
-	if len(args) < 1 {
-		p.GitService.Rebase(currentStack.ParentBranch, currentStack.Name)
-		p.submitPullRequestForStack(currentStack, pullRequests)
 
+	if len(args) < 1 {
+		p.StackService.SyncStack(currentStack, queue.New())
+
+		p.submitPullRequestForStack(currentStack, pullRequests)
 		p.GitService.CheckoutBranch(currentStack.Name)
+
 		return
 	}
 
 	if args[0] == "all" {
 		trunk := p.StackService.GetGraph()
-
-		syncCommand := &SyncCommand{
-			MetadataService: p.MetadataService,
-			StackService:    p.StackService,
-			GitService:      p.GitService,
-		}
-
-		syncCommand.Resync(trunk)
-		p.StackService.CacheGraphToDisk(trunk)
+		p.StackService.Resync(trunk)
 
 		p.submitAllPullRequests(trunk, pullRequests)
 
